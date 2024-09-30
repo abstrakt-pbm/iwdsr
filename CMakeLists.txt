@@ -4,4 +4,7 @@ project( IWDSR )
 
 set( CMAKE_CXX_STANDARD 20 )
 
-add_executable( iwdsr main.cpp)
+add_executable( iwdsR main.cpp)
+add_subdirectory(iwdsr)
+
+target_link_libraries(iwdsR CORE)
