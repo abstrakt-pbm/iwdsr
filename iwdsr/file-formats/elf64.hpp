@@ -94,6 +94,10 @@ class ELF {
   private:
   std::vector<ProgramHeader> programHeaders;
   std::vector<SectionHeader> sectionHeaders;
+
+  std::vector<ProgramHeader> resolveProgramHeaders();
+  std::vector<SectionHeader> resolveSectionHeaders();
+
   public:
   ELF(std::filesystem::path pathToELF);
 };
