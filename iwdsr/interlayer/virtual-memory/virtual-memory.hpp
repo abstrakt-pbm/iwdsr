@@ -4,6 +4,6 @@
 class VirtualMemory {
     public:
     VirtualMemory();
-    void mmap(const ELF&)
-
+    void mmap(const ELF& elfToLoad)
+    
 }

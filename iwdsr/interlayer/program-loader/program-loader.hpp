@@ -1,7 +1,7 @@
 #pragma once
 
 #include <filesystem>
-#include "../../file-formats/elf.hpp"
+#include "../../file-formats/elf64.hpp"
 
 class ElfLoader {
     private:
