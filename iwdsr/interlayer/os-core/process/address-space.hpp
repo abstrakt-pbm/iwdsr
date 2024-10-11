@@ -6,6 +6,7 @@ class AddressSpace {
     private:
     unsigned int size;
     int* space;
+    int* stack;
     void extend(unsigned int bytes);
     public:
     AddressSpace(unsigned int size);

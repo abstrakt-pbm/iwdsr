@@ -16,7 +16,7 @@ void AddressSpace::extend(unsigned int bytes) {
     space = newSpace;
 }
 
-void AddressSpace::mmap(unsigned int startAddress, std::fstream fileToMap, unsigned int byteSize) {
+void AddressSpace::mmap(unsigned int startAddress, std::fstream& fileToMap, unsigned int byteSize) {
     if (fileToMap.is_open()) {
         fileToMap.read(reinterpret_cast<char*>(space + startAddress), byteSize);
     };
