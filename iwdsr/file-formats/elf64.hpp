@@ -2,6 +2,66 @@
 
 #include <filesystem>
 #include <vector>
+#include <fstream>
+
+enum EI_CLASS {
+  ELFCLASSNONE,
+  ELFCLASS32,
+  ELFCLASS64
+};
+
+enum EI_DATA {
+  ELFDATANONE,
+  ELFDATA2LSB,
+  ELFDATA2MSB
+};
+
+enum EI_OSABI {
+  ELFOSABI_NONE,
+  ELFOSABI_HPUX,
+  ELFOSABI_NETBSD,
+  ELFOSABI_GNU,
+  ELFOSABI_SOLARIS,
+  ELFOSABI_AIX,
+  ELFOSABI_IRIX,
+  ELFOSABI_FREEBSD,
+  ELFOSABI_TRU64,
+  ELFOSABI_MODESTO,
+  ELFOSABI_OPENBSD,
+  ELFOSABI_OPENVMS,
+  ELFOSABI_NSK,
+  ELFOSABI_AROS,
+  ELFOSABI_FENIXOS,
+  ELFOSABI_CLOUDABI,
+  ELFOSABI_OPENVOS,
+};
+
+enum E_TYPE {
+  ET_NONE,
+  ET_REL,
+  ET_EXEC,
+  ET_DYN,
+  ET_CORE,
+};
+
+typedef struct {
+  EI_CLASS ei_class;
+  EI_DATA ei_data;
+  unsigned int ei_version;
+  EI_OSABI ei_osabi;
+  unsigned int ei_abiversion;
+  E_TYPE e_type;
+  std::int64_t e_entry;
+  std::int64_t e_phoff;
+  std::int64_t e_shoff;
+  std::int8_t e_flags;
+  std::int8_t e_ehsize;
+  std::int8_t e_phentsize;
+  std::int8_t e_phnum;
+  std::int8_t e_shentsize;
+  std::int8_t e_shnum;
+  std::int8_t e_shstrndx;
+} ELF_Header;
 
 enum P_TYPE {
   PT_NULL = 0x00000000,
@@ -91,12 +151,15 @@ typedef struct {
 } SectionHeader;
 
 class ELF {
-  private:
+  public:
+  std::fstream* elfFile;
+  ELF_Header elfHeader;
   std::vector<ProgramHeader> programHeaders;
   std::vector<SectionHeader> sectionHeaders;
 
-  std::vector<ProgramHeader> resolveProgramHeaders();
-  std::vector<SectionHeader> resolveSectionHeaders();
+  std::vector<ProgramHeader> parseProgramHeaders();
+  std::vector<SectionHeader> parseSectionHeaders();
+  void parseELFHeader();
 
   public:
   ELF(std::filesystem::path pathToELF);

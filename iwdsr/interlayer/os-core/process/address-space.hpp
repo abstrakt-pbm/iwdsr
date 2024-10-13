@@ -4,12 +4,16 @@
 
 class AddressSpace {
     private:
-    unsigned int size;
-    int* space;
-    int* stack;
-    void extend(unsigned int bytes);
+
+    unsigned int* programSpace;
+    unsigned int* stack;
+
     public:
-    AddressSpace(unsigned int size);
-    void mmap(unsigned int startAddress, std::fstream& fileToMap, unsigned int byteSize);
+    AddressSpace(unsigned int* programSpace);
+    ~AddressSpace();
+
+    unsigned int* getStackBase();
+    unsigned int* getDataStart();
+    unsigned int* getBssStart();
 };
 
