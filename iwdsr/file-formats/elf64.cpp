@@ -46,9 +46,9 @@ ELF_Header* ELF::parseELFHeader(){
     elfHdr->ei_osabi = static_cast<EI_OSABI>(rawElfHeader[7]);
     elfHdr->ei_abiversion = *((std::int8_t*)(rawElfHeader + 8));
     elfHdr->e_type = static_cast<E_TYPE>(*((std::uint8_t*)(rawElfHeader + 16)));
-    elfHdr->e_entry = changeEndian<std::uint64_t>(*((std::uint64_t*)(rawElfHeader + 24)));
-    elfHdr->e_phoff = changeEndian<std::uint64_t>(*((std::uint64_t*)(rawElfHeader + 32)));
-    elfHdr->e_shoff = changeEndian<std::uint64_t>(*((std::uint64_t*)(rawElfHeader + 40)));
+    elfHdr->e_entry = (*((std::uint64_t*)(rawElfHeader + 24)));
+    elfHdr->e_phoff = (*((std::uint64_t*)(rawElfHeader + 32)));
+    elfHdr->e_shoff = (*((std::uint64_t*)(rawElfHeader + 40)));
     elfHdr->e_flags = *((std::int32_t*)(rawElfHeader + 48));
     elfHdr->e_ehsize = *((std::int8_t*)(rawElfHeader + 52));
     elfHdr->e_phentsize = *((std::int8_t*)(rawElfHeader + 54));
