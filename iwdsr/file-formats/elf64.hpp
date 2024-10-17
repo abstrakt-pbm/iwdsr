@@ -4,19 +4,19 @@
 #include <vector>
 #include <fstream>
 
-enum EI_CLASS {
+enum EI_CLASS : char {
   ELFCLASSNONE,
   ELFCLASS32,
   ELFCLASS64
 };
 
-enum EI_DATA {
+enum EI_DATA : char {
   ELFDATANONE,
   ELFDATA2LSB,
   ELFDATA2MSB
 };
 
-enum EI_OSABI {
+enum EI_OSABI : char {
   ELFOSABI_NONE,
   ELFOSABI_HPUX,
   ELFOSABI_NETBSD,
@@ -36,7 +36,7 @@ enum EI_OSABI {
   ELFOSABI_OPENVOS,
 };
 
-enum E_TYPE {
+enum E_TYPE : std::int8_t {
   ET_NONE,
   ET_REL,
   ET_EXEC,
@@ -51,9 +51,9 @@ typedef struct {
   EI_OSABI ei_osabi;
   unsigned int ei_abiversion;
   E_TYPE e_type;
-  std::int64_t e_entry;
-  std::int64_t e_phoff;
-  std::int64_t e_shoff;
+  std::uint64_t e_entry;
+  std::uint64_t e_phoff;
+  std::uint64_t e_shoff;
   std::int8_t e_flags;
   std::int8_t e_ehsize;
   std::int8_t e_phentsize;
@@ -97,7 +97,7 @@ typedef struct {
 
 } ProgramHeader;
 
-enum SH_TYPE {
+enum SH_TYPE : std::int32_t{
   SHT_NULL = 0x0,
   SHT_PROGBITS = 0x1,
   SHT_SYMTAB = 0x2,
@@ -119,7 +119,7 @@ enum SH_TYPE {
   SHT_LOOS = 0x60000000
 };
 
-enum SH_FLAGS {
+enum SH_FLAGS : std::int64_t {
   SHF_WRITE = 0x1,
   SHF_ALLOC = 0x2,
   SHF_EXECINSTR = 0x4,
@@ -137,30 +137,33 @@ enum SH_FLAGS {
 };
 
 typedef struct {
-  int sh_name;
+  std::int32_t sh_name;
   SH_TYPE sh_type;
   SH_FLAGS sh_flags;
-  int sh_addr;
-  int sh_offset;
-  int sh_size;
-  int sh_link;
-  int sh_info;
-  int sh_addralign;
-  int sh_entsize;
+  std::int64_t sh_addr;
+  std::int64_t sh_offset;
+  std::int64_t sh_size;
+  std::int32_t sh_link;
+  std::int32_t sh_info;
+  std::int64_t sh_addralign;
+  std::int64_t sh_entsize;
 
 } SectionHeader;
 
 class ELF {
   public:
   std::fstream* elfFile;
-  ELF_Header elfHeader;
+  ELF_Header* elfHeader;
   std::vector<ProgramHeader> programHeaders;
   std::vector<SectionHeader> sectionHeaders;
 
   std::vector<ProgramHeader> parseProgramHeaders();
   std::vector<SectionHeader> parseSectionHeaders();
-  void parseELFHeader();
+  SectionHeader parseOneSectionHeader(char* rawSectionHeader);
+  std::vector<std::string> getSectionNames(char* rawShStrNdx);
+  ELF_Header* parseELFHeader();
 
   public:
   ELF(std::filesystem::path pathToELF);
+  ~ELF();
 };

@@ -7,7 +7,7 @@ class AddressSpace {
 
     unsigned int* programSpace;
     unsigned int* stack;
-
+    
     public:
     AddressSpace(unsigned int* programSpace);
     ~AddressSpace();
