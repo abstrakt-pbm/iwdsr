@@ -6,6 +6,6 @@
 int main() {
     ELF elf("/home/pablo/tmp/a.out");
     for ( auto sec : elf.sectionHeaders ) {
-        std::cout << std::hex << sec.sh_addr << std::endl;
+        std::cout << std::hex << sec.sh_name << std::endl;
     } 
 }

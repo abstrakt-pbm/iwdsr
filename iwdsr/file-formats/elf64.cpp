@@ -46,9 +46,9 @@ ELF_Header* ELF::parseELFHeader(){
     elfHdr->ei_osabi = static_cast<EI_OSABI>(rawElfHeader[7]);
     elfHdr->ei_abiversion = *((std::int8_t*)(rawElfHeader + 8));
     elfHdr->e_type = static_cast<E_TYPE>(*((std::uint8_t*)(rawElfHeader + 16)));
-    elfHdr->e_entry = (*((std::uint64_t*)(rawElfHeader + 24)));
-    elfHdr->e_phoff = (*((std::uint64_t*)(rawElfHeader + 32)));
-    elfHdr->e_shoff = (*((std::uint64_t*)(rawElfHeader + 40)));
+    elfHdr->e_entry = *((std::uint64_t*)(rawElfHeader + 24));
+    elfHdr->e_phoff = *((std::uint64_t*)(rawElfHeader + 32));
+    elfHdr->e_shoff = *((std::uint64_t*)(rawElfHeader + 40));
     elfHdr->e_flags = *((std::int32_t*)(rawElfHeader + 48));
     elfHdr->e_ehsize = *((std::int8_t*)(rawElfHeader + 52));
     elfHdr->e_phentsize = *((std::int8_t*)(rawElfHeader + 54));
@@ -69,23 +69,21 @@ std::vector<SectionHeader> ELF::parseSectionHeaders() {
     char* rawSectionTable = new char[elfHeader->e_shnum * elfHeader->e_shentsize];
 
     elfFile->seekg(elfHeader->e_shoff, std::ios::beg);
-    
-
     elfFile->read(rawSectionTable ,elfHeader->e_shnum * elfHeader->e_shentsize);
 
 
     for ( auto i = 0; i < elfHeader->e_shnum ; i++ ) {
         SectionHeader sectionHdr;
-        sectionHdr.sh_name = (std::int32_t)rawSectionTable[ i * elfHeader->e_shentsize];
+        sectionHdr.sh_name = *(std::int32_t*)(rawSectionTable + i * elfHeader->e_shentsize);
         sectionHdr.sh_type = static_cast<SH_TYPE>( rawSectionTable[ i * elfHeader->e_shentsize + 4] );
         sectionHdr.sh_flags = static_cast<SH_FLAGS>( rawSectionTable[ i * elfHeader->e_shentsize + 8] );
-        sectionHdr.sh_addr =  (std::int64_t)rawSectionTable[ i * elfHeader->e_shentsize + 16];
-        sectionHdr.sh_offset = (std::int64_t)rawSectionTable[ i * elfHeader->e_shentsize + 24];
-        sectionHdr.sh_size = (std::int64_t)rawSectionTable[ i * elfHeader->e_shentsize + 32 ];
-        sectionHdr.sh_link = (std::int32_t)rawSectionTable [ i * elfHeader->e_shentsize + 40 ];
-        sectionHdr.sh_info = (std::int32_t)rawSectionTable [ i * elfHeader->e_shentsize + 44 ];
-        sectionHdr.sh_addralign = (std::int64_t)rawSectionTable[ i * elfHeader->e_shentsize + 48 ];
-        sectionHdr.sh_entsize = (std::int64_t)rawSectionTable[ i * elfHeader->e_shentsize + 56 ];
+        sectionHdr.sh_addr =  *(std::int64_t*)(rawSectionTable + i * elfHeader->e_shentsize + 16);
+        sectionHdr.sh_offset = *(std::int64_t*)(rawSectionTable + i * elfHeader->e_shentsize + 24);
+        sectionHdr.sh_size = *(std::int64_t*)(rawSectionTable + i * elfHeader->e_shentsize + 32);
+        sectionHdr.sh_link = *(std::int32_t*)(rawSectionTable + i * elfHeader->e_shentsize + 40);
+        sectionHdr.sh_info = *(std::int32_t*)(rawSectionTable + i * elfHeader->e_shentsize + 44);
+        sectionHdr.sh_addralign = *(std::int64_t*)(rawSectionTable + i * elfHeader->e_shentsize + 48);
+        sectionHdr.sh_entsize = *(std::int64_t*)(rawSectionTable + i * elfHeader->e_shentsize + 56);
         sectionHdrs.push_back(sectionHdr);
 
     }
