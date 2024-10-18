@@ -4,8 +4,5 @@
 #include "iwdsr/file-formats/elf64.hpp"
 
 int main() {
-    ELF elf("/home/pablo/tmp/a.out");
-    for ( auto sec : elf.sectionHeaders ) {
-        std::cout << std::hex << sec.sh_name << std::endl;
-    } 
+    ELF elf("/home/pablo/tmp/a.out"); 
 }

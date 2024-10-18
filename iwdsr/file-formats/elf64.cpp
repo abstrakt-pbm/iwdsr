@@ -70,7 +70,7 @@ std::vector<SectionHeader> ELF::parseSectionHeaders() {
 
     elfFile->seekg(elfHeader->e_shoff, std::ios::beg);
     elfFile->read(rawSectionTable ,elfHeader->e_shnum * elfHeader->e_shentsize);
-
+    
 
     for ( auto i = 0; i < elfHeader->e_shnum ; i++ ) {
         SectionHeader sectionHdr;
@@ -103,15 +103,15 @@ std::vector<std::string> ELF::getSectionNames(char* rawShStrNdx) {
 
 SectionHeader ELF::parseOneSectionHeader(char* rawSectionHeader) {
     SectionHeader sectionHdr;
-    sectionHdr.sh_name = (std::int32_t)rawSectionHeader[0];
-    sectionHdr.sh_type = static_cast<SH_TYPE>( rawSectionHeader[4] );
-    sectionHdr.sh_flags = static_cast<SH_FLAGS>( rawSectionHeader[8] );
-    sectionHdr.sh_addr =  (std::int64_t)rawSectionHeader[16];
-    sectionHdr.sh_offset = (std::int64_t)rawSectionHeader[24];
-    sectionHdr.sh_size = (std::int64_t)rawSectionHeader[32];
-    sectionHdr.sh_link = (std::int32_t)rawSectionHeader[40];
-    sectionHdr.sh_info = (std::int32_t)rawSectionHeader[44];
-    sectionHdr.sh_addralign = (std::int64_t)rawSectionHeader[48];
-    sectionHdr.sh_entsize = (std::int64_t)rawSectionHeader[56];    
+    sectionHdr.sh_name = *(std::int32_t*)(rawSectionHeader);
+    sectionHdr.sh_type = static_cast<SH_TYPE>( *((std::int32_t*)rawSectionHeader + 4) );
+    sectionHdr.sh_flags = static_cast<SH_FLAGS>( *((std::int32_t*)rawSectionHeader + 8) );
+    sectionHdr.sh_addr =  *(std::int64_t*)(rawSectionHeader + 16);
+    sectionHdr.sh_offset = *(std::int64_t*)(rawSectionHeader + 24);
+    sectionHdr.sh_size = *(std::int64_t*)(rawSectionHeader + 32);
+    sectionHdr.sh_link = *(std::int32_t*)(rawSectionHeader + 40);
+    sectionHdr.sh_info = *(std::int32_t*)(rawSectionHeader + 44);
+    sectionHdr.sh_addralign = *(std::int64_t*)(rawSectionHeader + 48);
+    sectionHdr.sh_entsize = *(std::int64_t*)(rawSectionHeader + 56);
     return sectionHdr;
 }
