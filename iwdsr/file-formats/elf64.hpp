@@ -63,7 +63,7 @@ typedef struct {
   std::int8_t e_shstrndx;
 } ELF_Header;
 
-enum P_TYPE {
+enum P_TYPE : std::uint32_t {
   PT_NULL = 0x00000000,
   PT_LOAD = 0x00000001,
   PT_DYNAMIC = 0x00000002,
@@ -78,10 +78,12 @@ enum P_TYPE {
   PT_HIPROC = 0x7FFFFFFF
 };
 
-enum P_FLAGS {
+enum P_FLAGS : std::uint32_t {
   PF_X = 0x1,
   PF_W = 0x2,
-  PF_R = 0x4
+  PF_R = 0x4,
+  PF_MASKOS = 0x0ff00000,
+  PF_MASKPROC = 0xf0000000
 };
 
 typedef struct {
@@ -153,16 +155,13 @@ typedef struct {
 class ELF {
   public:
   std::fstream* elfFile;
-  ELF_Header* elfHeader;
+  ELF_Header elfHeader;
   std::vector<ProgramHeader> programHeaders;
   std::vector<SectionHeader> sectionHeaders;
 
   std::vector<ProgramHeader> parseProgramHeaders();
   std::vector<SectionHeader> parseSectionHeaders();
-  SectionHeader parseOneSectionHeader(char* rawSectionHeader);
-  std::vector<std::string> getSectionNames(char* rawShStrNdx);
-  ELF_Header* parseELFHeader();
-
+  ELF_Header parseELFHeader();
   public:
   ELF(std::filesystem::path pathToELF);
   ~ELF();

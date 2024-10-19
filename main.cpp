@@ -4,5 +4,8 @@
 #include "iwdsr/file-formats/elf64.hpp"
 
 int main() {
-    ELF elf("/home/pablo/tmp/a.out"); 
+    ELF elf("E:\\blackMetal\\a.out"); 
+    for ( auto prh : elf.programHeaders ) {
+        std::cout << std::hex << prh.p_align << std::endl;
+    }
 }
