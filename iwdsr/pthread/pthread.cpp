@@ -4,6 +4,5 @@
 void ProcThread::run() {
     asm volatile (
         "NOP"
-
     );
 } 
