@@ -1,41 +1,34 @@
 #include "virtual-memory.hpp"
 
-
-VMBlock::VMBlock(VAddr start, VAddr end, uint64_t* rawSpace) {
+VMBlock::VMBlock(VAddr start, VAddr end) {
     this->start = start;
     this->end = end;
-    this->rawSpace = rawSpace;
+    blockSpace = new uint64_t[ end - start ];
+
+}
+
+[[nodiscard]] void* VMBlock::getBlockSpace() const {
+    return blockSpace;
+}
+
+[[nodiscard]] bool VMBlock::isVAddrInBlock(VAddr addr) const {
+    return (addr >= start) & (addr < end);
 }
 
 uint64_t* VirtualMemory::alloc(VAddr start, uint64_t lenght) {
-    bool isBlockAlreadyExist = false;
-    VMBlock* foundedBlock;
-    for ( auto vmblock : memoryContainer) {
-        if ( vmblock->isAddrInBlock(start) ){
-            isBlockAlreadyExist = true;
-            foundedBlock = vmblock;
-            break;
-        }
+    for( auto vmblock : vmBlocks ) {
+        
     }
-    uint64_t* resultPtr;
-
-    if ( isBlockAlreadyExist ) {
-        resultPtr = foundedBlock->getRawSpace(); 
-    } else {
-        uint64_t* createdRawSpace = reinterpret_cast<uint64_t*>(new uint8_t(1000));
-        VMBlock* createdVMBlock = new VMBlock(start, start + lenght, createdRawSpace);
-        resultPtr = createdRawSpace;
-    }    
-
-    return resultPtr;
+    return 0;
 }
 
  int VirtualMemory::unWrap( MemoryMap processMemoryMap ) {
     return 0;   
 }
 
+VirtualMemory::VirtualMemory(uint64_t startVspace, uint64_t endVspace) {
+    this->startVspace = startVspace;
+    this->endVspace = endVspace;
+}
 
 
-uint64_t* VirtualMemory::map(uint64_t start, char payload[], uint64_t lenght) {
-   
- }
