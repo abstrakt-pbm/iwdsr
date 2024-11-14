@@ -73,21 +73,24 @@ void insert(PayloadType value) {
 
 template<typename PayloadType>
 void RBTree<PayloadType>::rotateLeft(RBNode<PayloadType>* relativeNode) {
-    RBNode<PayloadType>* tmp = relativeNode->rightChild;
-    if ( relativeNode != root ) {
-        relativeNode->father->payload < relativeNode->rightChild->payload ? relativeNode->father->rightChild = relativeNode->rightChild : relativeNode->father->leftChild = relativeNode->rightChild;
-        relativeNode->rightChild->leftChild = relativeNode;
-        tmp->leftChild = relativeNode;
+    RBNode<PayloadType>* rnFather = relativeNode->father;
+    RBNode<PayloadType>* rnRight = relativeNode->rightChild;
+    if ( rnFather != nullptr ) {
+        rnFather->rightChild = rnRight;
+        rnFather->rightChild->father = rnFather;
+        relativeNode->rightChild = rnRight->leftChild;
+        relativeNode->rightChild->father = relativeNode;
+        rnRight->leftChild = relativeNode;
+        rnRight->leftChild = rnRight;
+
     } else {
-        root->rightChild = tmp->leftChild;
-        tmp->leftChild = root;
-        root = tmp;
+        
     }
 }
 
 template<typename PayloadType>
 void RBTree<PayloadType>::rotateRight(RBNode<PayloadType>* relativeNode) {
-
+    
 }
 
 template<typename NodeType>
