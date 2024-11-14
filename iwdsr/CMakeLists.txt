@@ -8,6 +8,7 @@ set ( CORE_HEADERS
         "file-formats/elf64.hpp"
         "memory/memory-map.hpp"
         "memory/virtual-memory.hpp"
+        "data-structures/rbtree/rbtree.hpp"
 )
 
 set ( CORE_SRC
