@@ -33,7 +33,6 @@ template<typename PayloadType>
 class RBTree {
     public:
     RBNode<PayloadType>* root;
-    RBNode<PayloadType>* mkLeaf();
     void rotateRight(RBNode<PayloadType>* relativeNode);
     void rotateLeft(RBNode<PayloadType>* relativeNode);
     void rebalanceWithRotates(RBNode<PayloadType>* relativeNode);
@@ -43,7 +42,11 @@ class RBTree {
     RBTree();
     void insert(PayloadType*);
     void destroy(PayloadType*);
-    PayloadType* find(PayloadType* key);
+    PayloadType* find(PayloadType key);
+    bool isExists(PayloadType key);
+    RBNode<PayloadType>* findNode( PayloadType key );
+    uint64_t getDepth();
+    uint64_t getBlackDepth();
     
 };
 
@@ -88,22 +91,56 @@ void RBTree<PayloadType>::insert(PayloadType* value) {
     }
 }
 
-
+template<typename PayloadType>
+uint64_t RBTree<PayloadType>::getDepth() {
+    uint64_t depth = 0;    
+    RBNode<PayloadType>* currentNode = root;
+    while (currentNode != nullptr) {
+        depth++;
+        currentNode = currentNode->getRightChild();
+    }
+    return depth;
+}
 
 template<typename PayloadType>
-PayloadType* RBTree<PayloadType>::find(PayloadType* key) {
+uint64_t RBTree<PayloadType>::getBlackDepth() {
+    uint64_t blackDepth = 0;
     RBNode<PayloadType>* currentNode = root;
+    while(currentNode != nullptr) {
+        if (currentNode->getColour() == RBColour::BLACK) {
+            blackDepth++;
+        }
+        currentNode = currentNode->getRightChild();
+    }
+    return blackDepth;
+}
+
+template<typename PayloadType>
+bool RBTree<PayloadType>::isExists(PayloadType key) {
+    RBNode<PayloadType>* target = findNode(key);
+    return target->getPayload() != nullptr; 
+}
+
+template<typename PayloadType>
+PayloadType* RBTree<PayloadType>::find(PayloadType key) {
+    RBNode<PayloadType>* targetNode = findNode(key); 
+    return targetNode->getPayload();
+}
+
+template<typename PayloadType>
+RBNode<PayloadType>* RBTree<PayloadType>::findNode(PayloadType key) {
+   RBNode<PayloadType>* currentNode = root;
     
     while ( currentNode->getPayload() != nullptr) { 
-        if ( *currentNode->getPayload() == *key ) {
-            return currentNode->getPayload();
-        } else if ( *currentNode->getPayload() < *key ) {
+        if ( *currentNode->getPayload() == key ) {
+            return currentNode;
+        } else if ( *currentNode->getPayload() < key ) {
             currentNode = currentNode->getRightChild();
         } else {
             currentNode = currentNode->getLeftChild();
         }
-    }
-    return currentNode->getPayload();
+    } 
+    return currentNode;
 }
 
 template<typename PayloadType>
