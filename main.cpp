@@ -11,14 +11,11 @@ int main() {
     RBTree<int> treeTest;
 
     for( auto i = 0, j = 1; i < 100; i++, j*=-1 ){
-        nums[i] = i;
+        nums[i] = i * j;
         treeTest.insert(&nums[i]);
     }
-    std::cout << "Root: " << *treeTest.root->getPayload() << std::endl;
-    std::cout << "LeftChild: " << *treeTest.root->getLeftChild()->getPayload() << std::endl;
-    std::cout << "RightChild: " << treeTest.root->getRightChild() << std::endl;
     auto end = std::chrono::system_clock::now();
-    //int foundAim = 0;
-    //std::cout << "Found: " << treeTest.find( &foundAim );
+    int foundAim = -1;
+    std::cout << "Found: " << treeTest.find( &foundAim ) << std::endl;
     std::cout << "Finished with: " << end - now << std::endl;
 }

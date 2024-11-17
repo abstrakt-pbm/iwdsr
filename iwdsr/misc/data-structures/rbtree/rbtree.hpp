@@ -149,16 +149,13 @@ void RBTree<PayloadType>::rebalanceWithoutRotates(RBNode<PayloadType>* relativeN
 
 template<typename PayloadType>
 void RBTree<PayloadType>::rotateLeft(RBNode<PayloadType>* relativeNode) {
-    std::cout << "Left rotate start" << std::endl;
     RBNode<PayloadType>* rightNode = relativeNode->getRightChild();
     RBNode<PayloadType>* rnFather = relativeNode->getFather();
 
     relativeNode->setRightChild(rightNode->getLeftChild());
     rightNode->setLeftChild(relativeNode);
     rightNode->getLeftChild()->setFather(rightNode);
-    std::cout << "Relative rotate: " << rightNode->getRightChild() << std::endl;
     rightNode->setFather(rnFather);
-    std::cout << "Relative rotate: " << rightNode->getRightChild() << std::endl;
     relativeNode->getRightChild()->setFather(relativeNode);
     
     if ( rnFather != nullptr) {
@@ -174,12 +171,10 @@ void RBTree<PayloadType>::rotateLeft(RBNode<PayloadType>* relativeNode) {
     
     rightNode->setFather(rnFather);
     
-    std::cout << "Left rotate end" << std::endl; 
 }
 
 template<typename PayloadType>
 void RBTree<PayloadType>::rotateRight(RBNode<PayloadType>* relativeNode) {
-    std::cout << "Start rotate right" << std::endl;
     RBNode<PayloadType>* leftNode = relativeNode->getLeftChild(); 
     RBNode<PayloadType>* rnFather = relativeNode->getFather();
     relativeNode->setLeftChild(leftNode->getRightChild());
@@ -199,7 +194,6 @@ void RBTree<PayloadType>::rotateRight(RBNode<PayloadType>* relativeNode) {
         root = leftNode;
         leftNode->changeColour(RBColour::BLACK);
     }
-    std::cout << "Finish rotatate right" << std::endl; 
 }
 
 template<typename NodeType>
