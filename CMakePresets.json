@@ -57,6 +57,7 @@
                 "CMAKE_BUILD_TYPE": "Release"
             }
         },
+
         {
             "name": "LINUX",
             "generator": "Ninja",
