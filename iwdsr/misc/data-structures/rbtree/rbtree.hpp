@@ -84,8 +84,10 @@ void RBTree<PayloadType>::insert(PayloadType* value) {
     if( cnFather->getColour() == RBColour::RED) {
         RBNode<PayloadType>* uncle = *cnFather->getPayload() < *(cnFather->getFather()->getPayload()) ? cnFather->getFather()->getRightChild() : cnFather->getFather()->getLeftChild();
         if( uncle == nullptr || uncle->getColour() == RBColour::BLACK) {
+            std::cout << "Rebalancing with rotates" << std::endl;
             rebalanceWithRotates(currentNode);
         } else {
+            std::cout << "Rebalancing without rotates" << std::endl;
             rebalanceWithoutRotates(currentNode);
         }
     }
@@ -93,9 +95,9 @@ void RBTree<PayloadType>::insert(PayloadType* value) {
 
 template<typename PayloadType>
 uint64_t RBTree<PayloadType>::getDepth() {
-    uint64_t depth = 0;    
+    uint64_t depth = 0;
     RBNode<PayloadType>* currentNode = root;
-    while (currentNode != nullptr) {
+    while (currentNode->getRightChild() != nullptr) {
         depth++;
         currentNode = currentNode->getRightChild();
     }
@@ -147,12 +149,13 @@ template<typename PayloadType>
 void RBTree<PayloadType>::rebalanceWithRotates(RBNode<PayloadType>* relativeNode){
     RBNode<PayloadType>* rnFather = relativeNode->getFather();
     RBNode<PayloadType>* rnGrandFather = rnFather->getFather();
-    
+
+
     if ( *relativeNode->getPayload() < *rnFather->getPayload() && *rnFather->getPayload() > *rnGrandFather->getPayload() ) {
         rotateLeft(rnFather);
         rotateRight(rnGrandFather);
     } else if (*relativeNode->getPayload() > *rnFather->getPayload() && *rnFather->getPayload() < *rnGrandFather->getPayload()) {
-        rotateRight(rnFather);
+        rotateLeft(rnFather);
         rotateLeft(rnGrandFather);
     } else if ( *relativeNode->getPayload() < *rnFather->getPayload() &&  *rnFather->getPayload() < *rnGrandFather->getPayload()) {
         rotateRight(rnGrandFather);
@@ -166,15 +169,22 @@ void RBTree<PayloadType>::rebalanceWithRotates(RBNode<PayloadType>* relativeNode
 
 
 template<typename PayloadType>
-void RBTree<PayloadType>::rebalanceWithoutRotates(RBNode<PayloadType>* relativeNode){ RBNode<PayloadType>* currentNode = relativeNode;
-    while ( currentNode->getFather() != nullptr ) {
+void RBTree<PayloadType>::rebalanceWithoutRotates(RBNode<PayloadType>* relativeNode){
+    RBNode<PayloadType>* currentNode = relativeNode;
+    while (currentNode != nullptr ) {
         RBNode<PayloadType>* currentNodeFather = currentNode->getFather();
         RBNode<PayloadType>* currentNodeGrandfather = currentNodeFather->getFather();
-        RBNode<PayloadType>* currentNodeUncle = *currentNodeFather->getPayload() < *currentNode->getPayload() ? currentNodeFather->getLeftChild() : currentNodeFather->getRightChild();
+        RBNode<PayloadType>* currentNodeUncle;
+
+        if ( currentNodeGrandfather == nullptr ) {
+            currentNodeUncle = nullptr;
+        } else {
+            RBNode<PayloadType>* currentNodeUncle = *currentNodeFather->getPayload() < *currentNode->getPayload() ? currentNodeGrandfather->getLeftChild() : currentNodeGrandfather->getRightChild();
+            currentNodeUncle->changeColour(RBColour::BLACK);
+        }
 
         currentNodeFather->changeColour(RBColour::BLACK);
-        currentNodeUncle->changeColour(RBColour::BLACK);
-
+        
         if( currentNodeGrandfather != nullptr && currentNodeGrandfather->getFather() != nullptr ) {
             currentNodeGrandfather->changeColour(RBColour::RED);
             currentNode = currentNodeGrandfather;
