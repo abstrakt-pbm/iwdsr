@@ -6,23 +6,15 @@
 #include <chrono>
 
 int main() {
-    int nums[101];
-    auto now = std::chrono::system_clock::now();
+    int nums[100];
     RBTree<int> treeTest;
 
-    for( auto i = 0, j = 1; i <= 7; i++, j*=-1 ){
+    for( auto i = 0, j = 1; i < 100; i++, j*=-1 ){
         nums[i] = i;
         treeTest.insert(&nums[i]);
     }
-    auto end = std::chrono::system_clock::now();
-    
-    std::cout << "Root payload: " << *treeTest.root->getPayload() << std::endl;
-    std::cout << "Left Payload: " << *treeTest.root->getLeftChild()->getPayload() << std::endl;
-    std::cout << "Right Payload: " << *treeTest.root->getRightChild()->getPayload() << std::endl;
-    std::cout << "Left colour: " << treeTest.root->getLeftChild()->getColour() << std::endl;
-    std::cout << "Right colour: " << treeTest.root->getRightChild()->getColour() << std::endl;
-
-    std::cout << "Depth is: " << treeTest.getDepth() << std::endl;
-    std::cout << "Black depth is: " << treeTest.getBlackDepth() << std::endl;
-    //std::cout << "Finished with: " << end - now << std::endl;
+    std::cout << "Black depth: " << treeTest.getBlackDepth() << std::endl;
+    for ( auto i = 0 ; i < 100; i++) {
+        std::cout << "Find: " << treeTest.isExists(i) << std::endl;
+    }
 }
