@@ -40,6 +40,8 @@ class RBTree {
     void rotateLeft(RBNode<PayloadType>* relativeNode);
     void rebalanceAfterInsertRotateCases(RBNode<PayloadType>* relativeNode);
     void rebalanceAfterInsertRepainting(RBNode<PayloadType>* realativeNode);
+    void rebalanceAfterDeleteBBB(RBNode<PayloadType>* relativeNode);
+
     public:
     RBTree();
     void insert(PayloadType*);
@@ -96,7 +98,6 @@ void RBTree<PayloadType>::del(PayloadType key) {
         targetNode->setLeftChild(nullptr);
         targetNode->setRightChild(nullptr);
         targetNode->setPayload(nullptr);
-        targetNode->changeColour(RBColour::BLACK);
     } else if ( targetNode->getLeftChild() != nullptr && targetNode->getRightChild() != nullptr ) {
         RBNode<PayloadType>* existedChild = targetNode->getLeftChild() == nullptr ? targetNode->getRightChild() : targetNode->getLeftChild();
         targetNode->setPayload(existedChild->getPayload());
@@ -141,14 +142,80 @@ void RBTree<PayloadType>::rebalanceAfterDelete(RBNode<PayloadType>* problemNode)
             } else if ( brotherLeftChild->getColour() != brotherRightChild->getColour() ) {
                RBNode<PayloadType>* bRedChild = brotherLeftChild->getColour() == RBColour::RED ? brotherLeftChild : brotherRightChild;
                bool isRedChildNearCN;
+               if ( currentNode->getPayload() > cnBrother->getPayload() && bRedChild->getPayload() > cnBrother->getPayload()) {
+                    isRedChildNearCN = true;
+               } else if (currentNode->getPayload() < cnBrother->getPayload() && bRedChild->getPayload() < cnBrother->getPayload()) {
+                    isRedChildNearCN = true;
+               } else {
+                isRedChildNearCN = false;
+               }
 
                if (isRedChildNearCN) {
                     cnBrother->changeColour(RBColour::RED);
                     bRedChild->changeColour(RBColour::BLACK);
+                    if ( cnBrother->getPayload() < bRedChild->getPayload() ) {
+                        rotateLeft(cnBrother); 
+                    } else {
+                        rotateRight(cnBrother);
+                    }
+
+               } else {
+                    cnBrother->changeColour(cnFather->getColour());
+                    cnFather->changeColour(RBColour::BLACK);
+                    bRedChild->changeColour(RBColour::BLACK);
+                    if ( currentNode->getPayload() > cnBrother->getPayload() ) {
+                        rotateRight(cnFather);
+                    } else {
+                        rotateLeft(cnFather);
+                    }
+                    return;
                } 
             }
         }
     }
+}
+
+template<typename PayloadType>
+void RBTree<PayloadType>::rebalanceAfterDeleteBBB(RBNode<PayloadType>* relativeNode) {
+    if ( brotherLeftChild->getColour() == RBColour::BLACK && brotherRightChild->getColour() == RBColour::BLACK ) {
+                cnBrother->changeColour(RBColour::RED);
+                if ( cnFather->getColour() == RBColour::RED ) {
+                    cnFather->changeColour(RBColour::BLACK);
+                    return;
+                } else {
+                    currentNode = cnFather;
+                }
+            } else if ( brotherLeftChild->getColour() != brotherRightChild->getColour() ) {
+               RBNode<PayloadType>* bRedChild = brotherLeftChild->getColour() == RBColour::RED ? brotherLeftChild : brotherRightChild;
+               bool isRedChildNearCN;
+               if ( currentNode->getPayload() > cnBrother->getPayload() && bRedChild->getPayload() > cnBrother->getPayload()) {
+                    isRedChildNearCN = true;
+               } else if (currentNode->getPayload() < cnBrother->getPayload() && bRedChild->getPayload() < cnBrother->getPayload()) {
+                    isRedChildNearCN = true;
+               } else {
+                isRedChildNearCN = false;
+               }
+
+               if (isRedChildNearCN) {
+                    cnBrother->changeColour(RBColour::RED);
+                    bRedChild->changeColour(RBColour::BLACK);
+                    if ( cnBrother->getPayload() < bRedChild->getPayload() ) {
+                        rotateLeft(cnBrother); 
+                    } else {
+                        rotateRight(cnBrother);
+                    }
+
+               } else {
+                    cnBrother->changeColour(cnFather->getColour());
+                    cnFather->changeColour(RBColour::BLACK);
+                    bRedChild->changeColour(RBColour::BLACK);
+                    if ( currentNode->getPayload() > cnBrother->getPayload() ) {
+                        rotateRight(cnFather);
+                    } else {
+                        rotateLeft(cnFather);
+                    }
+                    return;
+               } 
 }
 
 template<typename PayloadType>

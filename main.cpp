@@ -23,5 +23,5 @@ int main() {
         treeTest.del(i);
     }
     std::cout << "Find: " << treeTest.isExists(100) << std::endl;
-    std::cout << "Blackdd Depth: " << treeTest.getBlackDepth() << std::endl;
+    std::cout << "Black Depth: " << treeTest.getBlackDepth() << std::endl;
 }
