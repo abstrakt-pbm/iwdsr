@@ -172,12 +172,10 @@ void RBTree<PayloadType>::rebalanceAfterInsert(RBNode<PayloadType>* relativeNode
         if( rnFather->getColour() == RBColour::RED) {
             if( uncle == nullptr || uncle->getColour() == RBColour::BLACK ) {
                 rebalanceAfterInsertRotateCases(currentNode);
-                currentNode = rnGrandFather;
             } else {
                 rebalanceAfterInsertRepainting(currentNode);
-                currentNode = rnGrandFather;
-
             }
+            currentNode = rnGrandFather;
         } else {
             return;
         }
