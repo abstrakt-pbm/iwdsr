@@ -47,7 +47,7 @@ class RBTree {
     void insert(PayloadType*);
     void del(PayloadType key);
     PayloadType* find(PayloadType key);
-    bool isExists(PayloadType key);
+    bool isKeyExists(PayloadType key);
     RBNode<PayloadType>* findNode( PayloadType key );
     uint64_t getDepth();
     uint64_t getBlackDepth();
@@ -239,7 +239,7 @@ void RBTree<PayloadType>::rebalanceAfterInsert(RBNode<PayloadType>* relativeNode
 
 
 template<typename PayloadType>
-bool RBTree<PayloadType>::isExists(PayloadType key) {
+bool RBTree<PayloadType>::isKeyExists(PayloadType key) {
     RBNode<PayloadType>* target = findNode(key);
     return target->getPayload() != nullptr; 
 }
