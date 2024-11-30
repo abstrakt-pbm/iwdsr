@@ -120,6 +120,30 @@ void RBTree<PayloadType>::del(PayloadType key) {
 }
 
 template<typename PayloadType>
+uint64_t RBTree<PayloadType>::getDepth() {
+    uint64_t depth = 0;
+    RBNode<PayloadType>* currentNode = root;
+    while (currentNode->getRightChild() != nullptr) {
+        depth++;
+        currentNode = currentNode->getRightChild();
+    }
+    return depth;
+}
+
+template<typename PayloadType>
+uint64_t RBTree<PayloadType>::getBlackDepth() {
+    uint64_t blackDepth = 0;
+    RBNode<PayloadType>* currentNode = root;
+    while(currentNode != nullptr) {
+        if (currentNode->getColour() == RBColour::BLACK) {
+            blackDepth++;
+        }
+        currentNode = currentNode->getRightChild();
+    }
+    return blackDepth;
+}
+
+template<typename PayloadType>
 void RBTree<PayloadType>::rebalanceAfterDelete(RBNode<PayloadType>* problemNode) {
     RBNode<PayloadType>* currentNode = problemNode;
     while(currentNode != nullptr) {
@@ -177,45 +201,7 @@ void RBTree<PayloadType>::rebalanceAfterDelete(RBNode<PayloadType>* problemNode)
 
 template<typename PayloadType>
 void RBTree<PayloadType>::rebalanceAfterDeleteBBB(RBNode<PayloadType>* relativeNode) {
-    if ( brotherLeftChild->getColour() == RBColour::BLACK && brotherRightChild->getColour() == RBColour::BLACK ) {
-                cnBrother->changeColour(RBColour::RED);
-                if ( cnFather->getColour() == RBColour::RED ) {
-                    cnFather->changeColour(RBColour::BLACK);
-                    return;
-                } else {
-                    currentNode = cnFather;
-                }
-            } else if ( brotherLeftChild->getColour() != brotherRightChild->getColour() ) {
-               RBNode<PayloadType>* bRedChild = brotherLeftChild->getColour() == RBColour::RED ? brotherLeftChild : brotherRightChild;
-               bool isRedChildNearCN;
-               if ( currentNode->getPayload() > cnBrother->getPayload() && bRedChild->getPayload() > cnBrother->getPayload()) {
-                    isRedChildNearCN = true;
-               } else if (currentNode->getPayload() < cnBrother->getPayload() && bRedChild->getPayload() < cnBrother->getPayload()) {
-                    isRedChildNearCN = true;
-               } else {
-                isRedChildNearCN = false;
-               }
 
-               if (isRedChildNearCN) {
-                    cnBrother->changeColour(RBColour::RED);
-                    bRedChild->changeColour(RBColour::BLACK);
-                    if ( cnBrother->getPayload() < bRedChild->getPayload() ) {
-                        rotateLeft(cnBrother); 
-                    } else {
-                        rotateRight(cnBrother);
-                    }
-
-               } else {
-                    cnBrother->changeColour(cnFather->getColour());
-                    cnFather->changeColour(RBColour::BLACK);
-                    bRedChild->changeColour(RBColour::BLACK);
-                    if ( currentNode->getPayload() > cnBrother->getPayload() ) {
-                        rotateRight(cnFather);
-                    } else {
-                        rotateLeft(cnFather);
-                    }
-                    return;
-               } 
 }
 
 template<typename PayloadType>
@@ -250,29 +236,7 @@ void RBTree<PayloadType>::rebalanceAfterInsert(RBNode<PayloadType>* relativeNode
 }
 
 
-template<typename PayloadType>
-uint64_t RBTree<PayloadType>::getDepth() {
-    uint64_t depth = 0;
-    RBNode<PayloadType>* currentNode = root;
-    while (currentNode->getRightChild() != nullptr) {
-        depth++;
-        currentNode = currentNode->getRightChild();
-    }
-    return depth;
-}
 
-template<typename PayloadType>
-uint64_t RBTree<PayloadType>::getBlackDepth() {
-    uint64_t blackDepth = 0;
-    RBNode<PayloadType>* currentNode = root;
-    while(currentNode != nullptr) {
-        if (currentNode->getColour() == RBColour::BLACK) {
-            blackDepth++;
-        }
-        currentNode = currentNode->getRightChild();
-    }
-    return blackDepth;
-}
 
 template<typename PayloadType>
 bool RBTree<PayloadType>::isExists(PayloadType key) {
@@ -398,6 +362,8 @@ void RBTree<PayloadType>::rotateRight(RBNode<PayloadType>* relativeNode) {
         leftNode->changeColour(RBColour::BLACK);
     }
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template<typename NodeType>
 RBNode<NodeType>::RBNode(NodeType* payload, RBColour colour, RBNode<NodeType>* father, RBNode<NodeType>* leftChild, RBNode<NodeType>* rightChild) {

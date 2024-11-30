@@ -18,10 +18,7 @@ int main() {
     for ( auto i = 0 ; i < 100; i++) {
         std::cout << "Find: " << treeTest.isExists(i) << std::endl;
     }
-    for ( int i = 10; i > 0 ; i-- ) {
-        std::cout << "Delete: " << i << std::endl; 
-        treeTest.del(i);
-    }
+    
     std::cout << "Find: " << treeTest.isExists(100) << std::endl;
     std::cout << "Black Depth: " << treeTest.getBlackDepth() << std::endl;
 }
