@@ -124,14 +124,16 @@ void RBTree<PayloadType>::del(PayloadType key) {
             tnFather->setLeftChild(existedChild);
         }
         existedChild->setFather(tnFather);
-        targetNode = existedChild;
-        
+        if (existedChild->getColour() == RBColour::RED) {
+            existedChild->changeColour(RBColour::BLACK);
+            return;
+        } 
     }
 
     if (targetNode->getColour() == RBColour::BLACK){
         rebalanceAfterDelete(targetNode);
     }
-    //delete targetNode;
+    delete targetNode;
 }
 
 
@@ -242,10 +244,9 @@ void RBTree<PayloadType>::rebalanceAfterDelete(RBNode<PayloadType>* targetNode) 
                 cnBrotherRchild->changeColour(RBColour::BLACK);
                 cnFather->changeColour(RBColour::BLACK);
                 rotateLeft(cnFather);
-                break;
             }
-                currentNode = cnFather;
         }
+        currentNode = cnFather;
     }
 }
 
