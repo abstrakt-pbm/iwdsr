@@ -9,14 +9,14 @@ int main() {
     int nums[100000];
     RBTree<int> treeTest;
 
-    for( auto i = 0, j = 1; i < 10; i++, j*=-1 ){
-        nums[i] = i;
+    for( auto i = 1, j = 1; i <= 10; i++, j*=-1 ){
+        nums[i] = i*j;
         treeTest.insert(&nums[i]);
     }
     
-    for ( auto i = 0; i < 10 ; i++ ) {
-        std::cout << "Delete: " << i << std::endl;
-        treeTest.del(i);
+    for ( auto i = 1, j = 1; i <= 10; i++, j*=-1 ) {
+        std::cout << "Delete: " << i*j << std::endl;
+        treeTest.del(i*j);
     }
 
     
