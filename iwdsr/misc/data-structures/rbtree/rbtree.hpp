@@ -34,6 +34,8 @@ class RBTree {
     public:
     RBNode<PayloadType>* root;
 
+    void deleteNode(RBNode<PayloadType>* node);
+
     void rebalanceAfterInsert(RBNode<PayloadType>* relativeNode);
     void rebalanceAfterDelete(RBNode<PayloadType>* relativeNode);
 
@@ -43,6 +45,7 @@ class RBTree {
     void rebalanceAfterInsertRotateCases(RBNode<PayloadType>* relativeNode);
     void rebalanceAfterInsertRepainting(RBNode<PayloadType>* realativeNode);
 
+    RBNode<PayloadType>* getNodeBrother(RBNode<PayloadType>* node);
 
     public:
     RBTree();
@@ -96,59 +99,65 @@ void RBTree<PayloadType>::del(PayloadType key) {
     if ( isNodeLeaf(targetNode) ) {
         return;
     }
-    RBNode<PayloadType>* tnFather = targetNode->getFather();    
-    if (isNodeLeaf(targetNode->getLeftChild()) && isNodeLeaf(targetNode->getRightChild())) {
-        if (targetNode == root) {
-            delete targetNode;
+    deleteNode(targetNode); 
+}
+
+template<typename PayloadType>
+void RBTree<PayloadType>::deleteNode(RBNode<PayloadType>* targetNode) {
+    RBNode<PayloadType>* delNodeChild;
+    if (isNodeLeaf(targetNode->getLeftChild()) && isNodeLeaf(targetNode->getRightChild()) ) {
+        if ( targetNode == root ) {
             root = nullptr;
+            delete targetNode;
             return;
         }
-        tnFather = targetNode->getFather();    
-        if (*tnFather->getPayload() < *targetNode->getPayload()) {
-            tnFather->setRightChild(new RBNode<PayloadType>(nullptr, RBColour::BLACK, tnFather));
+        if ( targetNode->getFather()->getLeftChild() == targetNode) {
+            targetNode->getFather()->setLeftChild(new RBNode<PayloadType>( nullptr, RBColour::BLACK ,targetNode->getFather()));
         } else {
-            tnFather->setLeftChild(new RBNode<PayloadType>(nullptr, RBColour::BLACK, tnFather));
+            targetNode->getFather()->setRightChild(new RBNode<PayloadType>( nullptr, RBColour::BLACK ,targetNode->getFather()));
         }
-    } else if (!isNodeLeaf(targetNode->getLeftChild()) && !isNodeLeaf(targetNode->getRightChild())) {
-        RBNode<PayloadType>* suitableNode = targetNode->getRightChild();
+        delNodeChild = targetNode->getFather()->getLeftChild();
+    } else if (!isNodeLeaf(targetNode->getLeftChild()) && !isNodeLeaf(targetNode->getRightChild()) ) {
+        auto suitableNode = targetNode->getRightChild();
         while(!isNodeLeaf(suitableNode->getLeftChild())) {
             suitableNode = suitableNode->getLeftChild();
         }
-        if (targetNode == root) {
-            root = new RBNode<PayloadType>(targetNode->getPayload(), RBColour::BLACK, nullptr, root->getLeftChild(), root->getRightChild());
-            targetNode = root->getLeftChild();
-        } else {
-            if (*tnFather->getPayload() < *targetNode->getPayload()) {
-                tnFather->setRightChild(new RBNode<PayloadType>(targetNode->getPayload(), targetNode->getColour(), tnFather, targetNode->getLeftChild(), targetNode->getRightChild()));
-            } else {
-                tnFather->setLeftChild(new RBNode<PayloadType>(targetNode->getPayload(), targetNode->getColour(), tnFather, targetNode->getLeftChild(), targetNode->getRightChild()));
-            }
-        }
         
-        delete suitableNode;
-    } else {
-        RBNode<PayloadType>* existedChild = isNodeLeaf(targetNode->getLeftChild()) ? targetNode->getRightChild() : targetNode->getLeftChild();
         if ( targetNode == root ) {
-            root = existedChild;
-            existedChild->changeColour(RBColour::BLACK);
-            delete targetNode;
-            return;
+            root = new RBNode<PayloadType>(suitableNode->getPayload(), RBColour::BLACK, nullptr, root->getLeftChild(), root->getRightChild());
+            delNodeChild = root->getLeftChild();
         } else {
-            if (*tnFather->getPayload() < *targetNode->getPayload()) {
-                tnFather->setRightChild(existedChild);
+            if(targetNode->getFather()->getLeftChild() == targetNode) {
+                targetNode->setLeftChild(new RBNode<PayloadType>(suitableNode->getPayload(), targetNode->getColour(), targetNode->getFather(), targetNode->getLeftChild(), targetNode->getRightChild()));
             } else {
-                tnFather->setLeftChild(existedChild);
+                targetNode->setRightChild(new RBNode<PayloadType>(suitableNode->getPayload(), targetNode->getColour(), targetNode->getFather(), targetNode->getLeftChild(), targetNode->getRightChild()));
             }
+            delNodeChild = targetNode->getFather()->getLeftChild();
+        } 
+        if (suitableNode->getFather()->getLeftChild() == suitableNode) {
+            suitableNode->getFather()->setLeftChild(new RBNode<PayloadType>(nullptr, RBColour::BLACK, suitableNode->getFather()));
+        } else {
+            suitableNode->getFather()->setRightChild(new RBNode<PayloadType>(nullptr, RBColour::BLACK, suitableNode->getFather()));
         }
-        existedChild->setFather(tnFather);
+    } else {
+        auto existedChild = !isNodeLeaf(targetNode->getLeftChild()) ? targetNode->getLeftChild() : targetNode->getRightChild();
+        if ( targetNode == root) {
+            root = new RBNode<PayloadType>(existedChild->getPayload(), RBColour::BLACK, nullptr);
+            delete existedChild;
+            return;
+        }
+        if (targetNode->getFather()->getLeftChild() == targetNode) {
+            targetNode->getFather()->setLeftChild(existedChild);
+        } else {
+            targetNode->getFather()->setRightChild(existedChild);
+        }
+        delNodeChild = existedChild;
     }
-
-    if (targetNode->getColour() == RBColour::BLACK){
-        rebalanceAfterDelete(targetNode->getFather()->getLeftChild());
+    if ( targetNode->getColour() == RBColour::BLACK) {
+        rebalanceAfterDelete(delNodeChild);
     }
     delete targetNode;
 }
-
 
 template<typename PayloadType>
 bool RBTree<PayloadType>::isKeyExists(PayloadType key) {
@@ -236,38 +245,41 @@ void RBTree<PayloadType>::rebalanceAfterInsert(RBNode<PayloadType>* relativeNode
 
 template<typename PayloadType>
 void RBTree<PayloadType>::rebalanceAfterDelete(RBNode<PayloadType>* problemNode) {
-    RBNode<PayloadType> *currentNode = problemNode;
-    while(currentNode != root && currentNode->getColour() == RBColour::BLACK) {
-        auto cnFather = currentNode->getFather();
-        auto cnBrother = cnFather->getLeftChild() == currentNode ? cnFather->getRightChild() : cnFather->getLeftChild();
-        if (cnBrother->getColour() == RBColour::RED) {
-            cnFather->getLeftChild() == cnBrother ? rotateRight(cnFather) : rotateLeft(cnFather);
+    RBNode<PayloadType>* currentNode = problemNode; 
+    while ( currentNode != root && currentNode->getColour() == RBColour::BLACK ) {
+        RBNode<PayloadType>* cnFather = currentNode->getFather();
+        RBNode<PayloadType>* cnBrother = cnFather->getLeftChild() == currentNode ? cnFather->getRightChild() : cnFather->getLeftChild();
+        if ( cnBrother->getColour() == RBColour::RED ) {
+            cnFather->getLeftChild() == currentNode ? rotateLeft(cnFather) : rotateRight(cnFather);
             cnBrother->changeColour(RBColour::BLACK);
             cnFather->changeColour(RBColour::RED);
+        }
+        cnBrother = getNodeBrother(currentNode);
+        auto cnBrotherLchild = cnBrother->getLeftChild();
+        auto cnBrotherRchild = cnBrother->getRightChild();
+        if (cnBrotherLchild == nullptr && cnBrotherRchild == nullptr || cnBrotherLchild->getColour() == RBColour::BLACK && cnBrotherRchild->getColour() == RBColour::BLACK ) {
+            cnBrother->changeColour(RBColour::RED);
+            currentNode = cnFather;
         } else {
-            auto cnBrotherLchild = cnBrother->getLeftChild();
-            auto cnBrotherRchild = cnBrother->getRightChild();
-            if (isNodeLeaf(cnBrotherLchild) && isNodeLeaf(cnBrotherRchild) || cnBrotherLchild->getColour() == RBColour::BLACK && cnBrotherRchild->getColour() == RBColour::BLACK) {
+            if (cnBrotherLchild != nullptr && cnBrotherLchild->getColour() == RBColour::RED) {
                 cnBrother->changeColour(RBColour::RED);
-                cnFather->changeColour(RBColour::BLACK);
-                break;
-            } else if (cnBrotherLchild != nullptr && cnBrotherLchild->getColour() == RBColour::RED){
-               cnBrother->changeColour(RBColour::RED);
-               cnBrotherLchild->changeColour(RBColour::BLACK);
-               cnFather->getRightChild() == cnBrother ? rotateRight(cnBrother) : rotateLeft(cnBrother);
-            } else if (cnBrotherRchild != nullptr && cnBrotherRchild->getColour() == RBColour::RED) { 
-                cnBrother->changeColour(cnFather->getColour());
-                cnBrotherRchild->changeColour(RBColour::BLACK);
-                cnFather->changeColour(RBColour::BLACK);
-                cnFather->getRightChild()  == cnBrother ? rotateLeft(cnFather) : rotateRight(cnFather);
-                break;
+                cnBrotherLchild->changeColour(RBColour::BLACK);
+                cnFather->getLeftChild() == currentNode ? rotateRight(cnBrother) : rotateLeft(cnBrother);
             }
+            cnFather = currentNode->getFather();
+            cnBrother = getNodeBrother(currentNode);
+            cnBrother->changeColour(cnFather->getColour());
+            cnFather->changeColour(RBColour::BLACK);
+            if (cnFather->getLeftChild() == currentNode) {
+                cnBrotherRchild->changeColour(RBColour::BLACK);
+            } else {
+                cnBrotherLchild->changeColour(RBColour::BLACK);
+            }
+            cnFather->getLeftChild() == currentNode ? rotateLeft(cnFather) : rotateRight(cnFather);
+            break;
         }
     }
-    if ( currentNode->getColour() == RBColour::RED && isNodeLeaf(currentNode->getLeftChild()) && isNodeLeaf(currentNode->getRightChild()) ) {
-        currentNode->changeColour(RBColour::BLACK);
-    }
-
+    currentNode->changeColour(RBColour::BLACK);
     root->changeColour(RBColour::BLACK);
 }
 
@@ -371,6 +383,17 @@ template<typename PayloadType>
 bool RBTree<PayloadType>::isNodeLeaf(RBNode<PayloadType>* node) {
     return node == nullptr || node->getPayload() == nullptr;
 }
+
+template<typename PayloadType>
+RBNode<PayloadType>* RBTree<PayloadType>::getNodeBrother(RBNode<PayloadType>* node){
+    RBNode<PayloadType>* brother = nullptr;
+    auto nFather = node->getFather();
+    if ( nFather != nullptr) {
+        brother = nFather->getLeftChild() == node ? nFather->getRightChild() : nFather->getLeftChild();
+    }
+    return brother;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template<typename NodeType>
@@ -378,8 +401,8 @@ RBNode<NodeType>::RBNode(NodeType* payload, RBColour colour, RBNode<NodeType>* f
     this->father = father;
     this->payload = payload;
     this->colour = colour;
-    this->leftChild = leftChild;
-    this->rightChild = rightChild;
+    setLeftChild(leftChild);
+    setRightChild(rightChild);
 }
 
 template<typename NodeType>
@@ -410,11 +433,17 @@ RBColour RBNode<NodeType>::getColour() {
 template<typename NodeType>
 void RBNode<NodeType>::setLeftChild(RBNode<NodeType>* child) {
     leftChild = child;
+    if (child != nullptr) {
+        leftChild->setFather(this);
+    }
 }
 
 template<typename NodeType>
 void RBNode<NodeType>::setRightChild(RBNode<NodeType>* child) {
     rightChild = child;
+    if ( rightChild != nullptr ){
+        rightChild->setFather(this);
+    }
 }
 
 template<typename NodeType>
