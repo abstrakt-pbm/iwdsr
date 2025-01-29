@@ -125,8 +125,6 @@ void RBTree<PayloadType>::deleteNode(RBNode<PayloadType>* targetNode) {
         
         if ( targetNode == root ) {
             root = new RBNode<PayloadType>(suitableNode->getPayload(), RBColour::BLACK, nullptr, root->getLeftChild(), root->getRightChild());
-            root->setLeftChild(new RBNode<PayloadType>(nullptr, RBColour::BLACK, root));
-            root->setRightChild(new RBNode<PayloadType>(nullptr, RBColour::BLACK, root));
             delNodeChild = root->getLeftChild();
         } else {
             if(targetNode->getFather()->getLeftChild() == targetNode) {
