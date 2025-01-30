@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <vector>
 #include <fstream>
+#include <unordered_map>
 
 enum EI_CLASS : char {
   ELFCLASSNONE,
@@ -152,17 +153,38 @@ typedef struct {
 
 } SectionHeader;
 
-class ELF {
+class Section {
+  private:
+  bool isLoad;
+  std::string title; 
+  SectionHeader* headers;
+  ProgramHeader* progHeaders; 
+  uint8_t* payload;
+
+
   public:
+  Section(std::string, SectionHeader *seg, ProgramHeader *progHdr);
+  ~Section();
+
+};
+
+class ELF {
+  private:
   std::fstream* elfFile;
   ELF_Header elfHeader;
-  std::vector<ProgramHeader> programHeaders;
-  std::vector<SectionHeader> sectionHeaders;
 
-  std::vector<ProgramHeader> parseProgramHeaders();
-  std::vector<SectionHeader> parseSectionHeaders();
+  std::vector<ProgramHeader*> programHeaders;
+  std::vector<SectionHeader*> sectionHeaders;
+  std::unordered_map<std::string, Section*> sections;
+
+  std::vector<ProgramHeader*> parseProgramHeaders();
+  std::vector<SectionHeader*> parseSectionHeaders();
   ELF_Header parseELFHeader();
+
+  std::vector<std::string> parseStrTable();
+
   public:
   ELF(std::filesystem::path pathToELF);
   ~ELF();
+  Section* getSectionByName(std::string sectionName);
 };

@@ -23,10 +23,17 @@ ELF::ELF(std::filesystem::path pathToELF) {
     elfHeader = parseELFHeader();
     sectionHeaders = parseSectionHeaders();
     programHeaders = parseProgramHeaders();
+
+    std::vector<std::string> sectionTitles = parseStrTable();
+    for ( auto i = 0 ; i < sectionHeaders.size() ; i++ ) {
+        sections[sectionTitles[i]] = new Section(sectionTitles[i], sectionHeaders[i], programHeaders[i]); 
+    }
+
     elfFile.close();
-}; 
+};
 
 ELF::~ELF() {
+
 }
 
 ELF_Header ELF::parseELFHeader(){
@@ -59,8 +66,8 @@ ELF_Header ELF::parseELFHeader(){
     return elfHdr;
 };
 
-std::vector<SectionHeader> ELF::parseSectionHeaders() {
-    std::vector<SectionHeader> sectionHdrs (elfHeader.e_shnum);
+std::vector<SectionHeader*> ELF::parseSectionHeaders() {
+    std::vector<SectionHeader*> sectionHdrs (elfHeader.e_shnum);
     if ( elfHeader.e_shoff == 0) {
         return sectionHdrs;
     }
@@ -71,17 +78,17 @@ std::vector<SectionHeader> ELF::parseSectionHeaders() {
     
 
     for ( auto i = 0; i < elfHeader.e_shnum ; i++ ) {
-        SectionHeader sectionHdr;
-        sectionHdr.sh_name = *(int32_t*)(rawSectionTable + i * elfHeader.e_shentsize);
-        sectionHdr.sh_type = static_cast<SH_TYPE>( rawSectionTable[ i * elfHeader.e_shentsize + 4] );
-        sectionHdr.sh_flags = static_cast<SH_FLAGS>( rawSectionTable[ i * elfHeader.e_shentsize + 8] );
-        sectionHdr.sh_addr =  *(int64_t*)(rawSectionTable + i * elfHeader.e_shentsize + 16);
-        sectionHdr.sh_offset = *(int64_t*)(rawSectionTable + i * elfHeader.e_shentsize + 24);
-        sectionHdr.sh_size = *(int64_t*)(rawSectionTable + i * elfHeader.e_shentsize + 32);
-        sectionHdr.sh_link = *(int32_t*)(rawSectionTable + i * elfHeader.e_shentsize + 40);
-        sectionHdr.sh_info = *(int32_t*)(rawSectionTable + i * elfHeader.e_shentsize + 44);
-        sectionHdr.sh_addralign = *(int64_t*)(rawSectionTable + i * elfHeader.e_shentsize + 48);
-        sectionHdr.sh_entsize = *(int64_t*)(rawSectionTable + i * elfHeader.e_shentsize + 56);
+        SectionHeader* sectionHdr = new SectionHeader();
+        sectionHdr->sh_name = *(int32_t*)(rawSectionTable + i * elfHeader.e_shentsize);
+        sectionHdr->sh_type = static_cast<SH_TYPE>( rawSectionTable[ i * elfHeader.e_shentsize + 4] );
+        sectionHdr->sh_flags = static_cast<SH_FLAGS>( rawSectionTable[ i * elfHeader.e_shentsize + 8] );
+        sectionHdr->sh_addr =  *(int64_t*)(rawSectionTable + i * elfHeader.e_shentsize + 16);
+        sectionHdr->sh_offset = *(int64_t*)(rawSectionTable + i * elfHeader.e_shentsize + 24);
+        sectionHdr->sh_size = *(int64_t*)(rawSectionTable + i * elfHeader.e_shentsize + 32);
+        sectionHdr->sh_link = *(int32_t*)(rawSectionTable + i * elfHeader.e_shentsize + 40);
+        sectionHdr->sh_info = *(int32_t*)(rawSectionTable + i * elfHeader.e_shentsize + 44);
+        sectionHdr->sh_addralign = *(int64_t*)(rawSectionTable + i * elfHeader.e_shentsize + 48);
+        sectionHdr->sh_entsize = *(int64_t*)(rawSectionTable + i * elfHeader.e_shentsize + 56);
         sectionHdrs[i] = sectionHdr;
     }
 
@@ -89,25 +96,56 @@ std::vector<SectionHeader> ELF::parseSectionHeaders() {
     return sectionHdrs;
 }
 
-std::vector<ProgramHeader> ELF::parseProgramHeaders() {
-    std::vector<ProgramHeader> programHdrs(elfHeader.e_phnum);
+std::vector<ProgramHeader*> ELF::parseProgramHeaders() {
+    std::vector<ProgramHeader*> programHdrs(elfHeader.e_phnum);
     char* rawProgramHeaderTable = new char [ elfHeader.e_phentsize * elfHeader.e_phnum ];
     elfFile->seekg(elfHeader.e_phoff, std::ios::beg);
     elfFile->read(rawProgramHeaderTable, elfHeader.e_phentsize * elfHeader.e_phnum);
 
     for( auto i = 0 ; i < elfHeader.e_phnum ; i++ ) {
-        ProgramHeader programHdr;
-        programHdr.p_type = static_cast<P_TYPE>(*(uint32_t*)(rawProgramHeaderTable + i * elfHeader.e_phentsize ));
-        programHdr.p_flag = static_cast<P_FLAGS>(*(uint32_t*)(rawProgramHeaderTable + i * elfHeader.e_phentsize + 4));
-        programHdr.p_offset = *(uint64_t*)(rawProgramHeaderTable + i * elfHeader.e_phentsize + 8);
-        programHdr.p_vaddr  = *(uint64_t*)(rawProgramHeaderTable + i * elfHeader.e_phentsize + 16);
-        programHdr.p_paddr = *(uint64_t*)(rawProgramHeaderTable + i * elfHeader.e_phentsize + 24);
-        programHdr.p_filesz = *(uint64_t*)(rawProgramHeaderTable + i * elfHeader.e_phentsize + 32);
-        programHdr.p_memsz = *(uint64_t*)(rawProgramHeaderTable + i * elfHeader.e_phentsize + 40);
-        programHdr.p_align = *(uint64_t*)(rawProgramHeaderTable + i * elfHeader.e_phentsize + 48);
+        ProgramHeader* programHdr = new ProgramHeader();
+        programHdr->p_type = static_cast<P_TYPE>(*(uint32_t*)(rawProgramHeaderTable + i * elfHeader.e_phentsize ));
+        programHdr->p_flag = static_cast<P_FLAGS>(*(uint32_t*)(rawProgramHeaderTable + i * elfHeader.e_phentsize + 4));
+        programHdr->p_offset = *(uint64_t*)(rawProgramHeaderTable + i * elfHeader.e_phentsize + 8);
+        programHdr->p_vaddr  = *(uint64_t*)(rawProgramHeaderTable + i * elfHeader.e_phentsize + 16);
+        programHdr->p_paddr = *(uint64_t*)(rawProgramHeaderTable + i * elfHeader.e_phentsize + 24);
+        programHdr->p_filesz = *(uint64_t*)(rawProgramHeaderTable + i * elfHeader.e_phentsize + 32);
+        programHdr->p_memsz = *(uint64_t*)(rawProgramHeaderTable + i * elfHeader.e_phentsize + 40);
+        programHdr->p_align = *(uint64_t*)(rawProgramHeaderTable + i * elfHeader.e_phentsize + 48);
         programHdrs[i] = programHdr;
     } 
 
     delete rawProgramHeaderTable; 
     return programHdrs;
+}
+
+std::vector<std::string> ELF::parseStrTable(){ 
+    SectionHeader* strTabSecHeader = sectionHeaders[elfHeader.e_shstrndx];
+    std::vector<std::string> strTable;
+
+    char rawStrTab[strTabSecHeader->sh_size];
+    elfFile->seekg(strTabSecHeader->sh_offset, std::ios::beg);
+    elfFile->read(rawStrTab, strTabSecHeader->sh_size);
+
+    bool consumingWord = false;
+    int prev = 0;
+    for ( auto i = 0 ; i < strTabSecHeader->sh_size ; i++ ){
+        if ( consumingWord == false && rawStrTab[i] == 0x00) {
+            consumingWord = true;
+            prev = i+1;
+        } else if (consumingWord == true && rawStrTab[i] == 0x00) {
+            consumingWord = false;
+            std::span<char> rawWord(rawStrTab + prev, i - prev);
+            strTable.push_back( std::string(rawWord.begin(), rawWord.end()) );
+        }
+    }
+    return strTable;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Section::Section(std::string title, SectionHeader *segHdr, ProgramHeader *progHdr) {
+    this->title = title;
+    this->headers = segHdr;
+    this->progHeaders = progHdr;
 }

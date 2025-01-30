@@ -2,8 +2,8 @@
 #include <cstdint>
 #include <vector>
 #include "memory-map.hpp"
-
-
+#include <unordered_map>
+#include <string>
 using VAddr = std::uint64_t;
 
 
@@ -12,8 +12,8 @@ class VMBlock {
     VAddr start;
     VAddr end;
     void* blockSpace;
-
     bool isFree;
+
     public:
     VMBlock(VAddr start, VAddr end);
     [[nodiscard]] void* getBlockSpace() const;
@@ -23,12 +23,9 @@ class VMBlock {
 
 class VirtualMemory {
     private:
-    std::vector<VMBlock*> vmBlocks;
-    uint64_t startVspace;
-    uint64_t endVspace;
+    std::unordered_map<std::string, VMBlock*> symbols;
     public:
-    VirtualMemory(uint64_t startVspace, uint64_t endVspace);
-    uint64_t* alloc(VAddr start, uint64_t lenght);
-    void dealloc(VAddr* vmbStartAddr);
-    int unWrap( MemoryMap processMemoryMap);
+    VirtualMemory(MemoryMap* processMemoryMap);
+    uint8_t* loadSymbol();
+
 };
