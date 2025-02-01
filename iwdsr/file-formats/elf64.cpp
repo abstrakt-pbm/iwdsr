@@ -366,5 +366,17 @@ Symbol::Symbol(std::string name, uint8_t st_info, uint8_t st_other, uint16_t st_
 }
 
 std::string Symbol::getName() {
+
     return this->name;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+uint64_t Rel::getSymbolId(){
+    return r_info >> 32;
+}
+
+
+RelocationType Rel::getRelocationType() {
+    return static_cast<RelocationType>(r_info & 0xFFFFFFFF );
 }
