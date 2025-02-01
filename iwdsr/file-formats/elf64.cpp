@@ -23,11 +23,15 @@ ELF::ELF(std::filesystem::path pathToELF) {
     elfHeader = parseELFHeader();
     sectionHeaders = parseSectionHeaders();
     programHeaders = parseProgramHeaders();
-
-    std::vector<std::string> sectionTitles = parseStrTable();
+    std::unordered_map<uint64_t, std::string> shstrTab = parseShStrTable();
     for ( auto i = 0 ; i < sectionHeaders.size() ; i++ ) {
-        sections[sectionTitles[i]] = new Section(sectionTitles[i], sectionHeaders[i], programHeaders[i]); 
+        sections[shstrTab[sectionHeaders[i]->sh_name]] = new Section(shstrTab[sectionHeaders[i]->sh_name], sectionHeaders[i]);
     }
+    
+    symbols = parseSymbolTable();
+    relHeaders = parseRelTables();
+    relaHeaders = parseRelaTables();
+    gotPointers = parseGotTable();
 
     elfFile.close();
 };
@@ -98,7 +102,7 @@ std::vector<SectionHeader*> ELF::parseSectionHeaders() {
 
 std::vector<ProgramHeader*> ELF::parseProgramHeaders() {
     std::vector<ProgramHeader*> programHdrs(elfHeader.e_phnum);
-    char* rawProgramHeaderTable = new char [ elfHeader.e_phentsize * elfHeader.e_phnum ];
+    char rawProgramHeaderTable[ elfHeader.e_phentsize * elfHeader.e_phnum ];
     elfFile->seekg(elfHeader.e_phoff, std::ios::beg);
     elfFile->read(rawProgramHeaderTable, elfHeader.e_phentsize * elfHeader.e_phnum);
 
@@ -114,38 +118,214 @@ std::vector<ProgramHeader*> ELF::parseProgramHeaders() {
         programHdr->p_align = *(uint64_t*)(rawProgramHeaderTable + i * elfHeader.e_phentsize + 48);
         programHdrs[i] = programHdr;
     } 
-
-    delete rawProgramHeaderTable; 
     return programHdrs;
 }
 
-std::vector<std::string> ELF::parseStrTable(){ 
+std::unordered_map<uint64_t, std::string> ELF::parseShStrTable(){ 
     SectionHeader* strTabSecHeader = sectionHeaders[elfHeader.e_shstrndx];
-    std::vector<std::string> strTable;
 
-    char rawStrTab[strTabSecHeader->sh_size];
+    char rawShStrTab[strTabSecHeader->sh_size];
     elfFile->seekg(strTabSecHeader->sh_offset, std::ios::beg);
-    elfFile->read(rawStrTab, strTabSecHeader->sh_size);
+    elfFile->read(rawShStrTab, strTabSecHeader->sh_size);
+    
+    return separateASCIIZeroes(rawShStrTab, strTabSecHeader->sh_size);
+}
+
+std::unordered_map<uint64_t, std::string> ELF::parseStrTable() {
+    Section* strTabSec = getSectionByName(".strtab");
+    SectionHeader* strTabHeader = strTabSec->getHeader();
+    char rawStrTab[strTabHeader->sh_size];
+
+    elfFile->seekg(strTabHeader->sh_offset, std::ios::beg);
+    elfFile->read(rawStrTab, strTabHeader->sh_size);
+
+    return separateASCIIZeroes(rawStrTab, strTabHeader->sh_size); 
+}
+
+std::vector<Rel*> ELF::parseRelTables() {
+    std::vector<Rel*> relsTable;
+    std::vector<Section*> relTypeSections = getSectionsByShType(SHT_REL);
+    for (auto section : relTypeSections ) {
+        auto relsFromCurrentSection = parseRelTable(section);
+        relsTable.reserve(relsTable.size() + relsFromCurrentSection.size());
+        relsTable.insert(relsTable.end(), relsTable.begin(), relsTable.end());
+        relsTable.insert(relsTable.end(), relsFromCurrentSection.begin(), relsFromCurrentSection.end());
+    }
+
+    return relsTable;
+}
+
+std::vector<Rel*> ELF::parseRelTable(Section* relTypeSection) {
+    SectionHeader* rtsHeader = relTypeSection->getHeader();
+    std::vector<Rel*> rels;
+    if ( rtsHeader->sh_type != SH_TYPE::SHT_REL) {
+        return rels;
+    }
+
+    char rawTable[rtsHeader->sh_size];
+
+    elfFile->seekg(rtsHeader->sh_offset, std::ios::beg);
+    elfFile->read(rawTable, rtsHeader->sh_offset);
+
+    uint64_t recordCount = rtsHeader->sh_size / rtsHeader->sh_entsize;
+
+    for ( auto i = 0 ; i < recordCount ; i++ ) {
+        Rel* currentRel = new Rel;
+        currentRel->r_info = *(uint64_t*)(rawTable + i * rtsHeader->sh_entsize);
+        currentRel->r_offset = *(uint64_t*)(rawTable + i * rtsHeader->sh_entsize + 8); 
+        rels.push_back(currentRel);
+    }
+
+    return rels;
+}
+
+std::vector<Rela*> ELF::parseRelaTables() {
+    std::vector<Rela*> relasTable;
+    std::vector<Section*> relaTypeSections = getSectionsByShType(SHT_RELA);
+    for (auto section : relaTypeSections ) {
+        auto relasFromCurrentSection = parseRelaTable(section);
+        relasTable.reserve(relasTable.size() + relasFromCurrentSection.size());
+        relasTable.insert(relasTable.end(), relasTable.begin(), relasTable.end());
+        relasTable.insert(relasTable.end(), relasFromCurrentSection.begin(), relasFromCurrentSection.end());
+    }
+    return relasTable;
+}
+
+std::vector<Rela*> ELF::parseRelaTable(Section* relaTypeSection) {
+   SectionHeader* relatsHeader = relaTypeSection->getHeader(); 
+   std::vector<Rela*> relas;
+
+   if (relatsHeader->sh_type != SH_TYPE::SHT_RELA) {
+        return relas;
+   }
+
+   char rawRelaTable[relatsHeader->sh_size];
+
+   elfFile->seekg(relatsHeader->sh_offset);
+   elfFile->read(rawRelaTable, std::ios::beg);
+
+   uint64_t recordCount = relatsHeader->sh_size / relatsHeader->sh_entsize;
+   for ( auto i = 0 ; i < recordCount ; i++ ) {
+        Rela* currentRela = new Rela;
+        currentRela->r_info = *(uint64_t*)(rawRelaTable + i * relatsHeader->sh_entsize);
+        currentRela->r_offset = *(uint64_t*)(rawRelaTable + i * relatsHeader->sh_entsize + 8);
+        currentRela->r_addend = *(int64_t*)(rawRelaTable + i * relatsHeader->sh_entsize + 16);
+        relas.push_back(currentRela);
+   }
+
+   return relas;
+}
+
+std::unordered_map<uint64_t, std::string> ELF::separateASCIIZeroes(char* rawWords, uint64_t charsCount){
+    std::unordered_map<uint64_t, std::string> wordsMap;
+    if ( rawWords == nullptr ) {
+        return wordsMap;
+    }
 
     bool consumingWord = false;
     int prev = 0;
-    for ( auto i = 0 ; i < strTabSecHeader->sh_size ; i++ ){
-        if ( consumingWord == false && rawStrTab[i] == 0x00) {
+    auto i = 0;
+    while ( i < charsCount){
+        if ( consumingWord == false && rawWords[i] == 0x00) {
             consumingWord = true;
             prev = i+1;
-        } else if (consumingWord == true && rawStrTab[i] == 0x00) {
+            i++;
+        } else if (consumingWord == true && rawWords[i] == 0x00) {
             consumingWord = false;
-            std::span<char> rawWord(rawStrTab + prev, i - prev);
-            strTable.push_back( std::string(rawWord.begin(), rawWord.end()) );
+            std::span<char> rawWord(rawWords + prev, i - prev);
+            wordsMap[prev] = std::string(rawWord.begin(), rawWord.end());
+        } else {
+            i++;
         }
     }
-    return strTable;
+    return wordsMap;
+}
+
+std::unordered_map<std::string, Symbol*> ELF::parseSymbolTable() {
+    std::unordered_map<std::string, Symbol*> symbols;
+    Section* symTab = getSectionByName(".symtab");
+    SectionHeader* symTabHeader = symTab->getHeader();
+    std::unordered_map<uint64_t, std::string> strTab = parseStrTable();
+
+    char rawSymTab[symTabHeader->sh_size];
+    elfFile->seekg(symTabHeader->sh_offset, std::ios::beg);
+    elfFile->read(rawSymTab, symTabHeader->sh_size);
+
+    uint64_t recordCount = symTabHeader->sh_size / symTabHeader->sh_entsize;
+
+    for ( auto i = 0 ; i < recordCount ; i++ ) {
+        uint64_t st_name = *(uint32_t*)(rawSymTab + i * symTabHeader->sh_entsize);
+        uint8_t st_info = *(uint8_t*)(rawSymTab + i * symTabHeader->sh_entsize + 4);
+        uint8_t st_other = *(uint8_t*)(rawSymTab + i * symTabHeader->sh_entsize + 5);
+        uint16_t st_shndx = *(uint16_t*)(rawSymTab + i * symTabHeader->sh_entsize + 6);
+        uint64_t st_value = *(uint64_t*)(rawSymTab + i * symTabHeader->sh_entsize + 8);
+        uint64_t st_size = *(uint64_t*)(rawSymTab + i * symTabHeader->sh_entsize + 16);
+
+        symbols[strTab[st_name]] = new Symbol(strTab[st_name], st_info, st_other, st_shndx, st_value, st_size);
+    }
+
+    return symbols;
+}
+
+std::vector<uint64_t> ELF::parseGotTable() {
+    std::vector<uint64_t> funcPointers;
+    Section* gotSec = getSectionByName(".got");
+    SectionHeader* gotSecHeader = gotSec->getHeader();
+
+    char rawGotTable[gotSecHeader->sh_size];
+    elfFile->seekg(gotSecHeader->sh_offset, std::ios::beg);
+    elfFile->read(rawGotTable, gotSecHeader->sh_size);
+
+    uint64_t recordCount = gotSecHeader->sh_size / gotSecHeader->sh_entsize;
+    for ( auto i = 0 ; i < recordCount ; i++ ) {
+       uint64_t currentFuncPointer =  *(uint64_t*)(rawGotTable + i * gotSecHeader->sh_entsize);
+       funcPointers.push_back(currentFuncPointer);
+    }
+
+    return funcPointers;
+}
+
+Section* ELF::getSectionByName(std::string sectionName) {
+    if ( sections.contains(sectionName) ) {
+        return sections[sectionName]; 
+    } else {
+        return nullptr;
+    }
+}
+
+std::vector<Section*> ELF::getSectionsByShType(SH_TYPE type){
+    std::vector<Section*> secs;
+    for( auto section : sections) {
+        SectionHeader* secHeader = section.second->getHeader();
+        if (secHeader->sh_type == type) {
+            secs.push_back(section.second);
+        }
+    }    
+    return secs;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Section::Section(std::string title, SectionHeader *segHdr, ProgramHeader *progHdr) {
+Section::Section(std::string title, SectionHeader *segHdr) {
     this->title = title;
     this->headers = segHdr;
-    this->progHeaders = progHdr;
+}
+
+SectionHeader* Section::getHeader() {
+    return this->headers;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Symbol::Symbol(std::string name, uint8_t st_info, uint8_t st_other, uint16_t st_shndx, uint64_t st_value, uint64_t st_size) {
+    this->name = name;
+    this->st_info = st_info;
+    this->st_other = st_other;
+    this->st_shndx = st_shndx;
+    this->st_value = st_value;
+    this->st_size = st_size;
+}
+
+std::string Symbol::getName() {
+    return this->name;
 }

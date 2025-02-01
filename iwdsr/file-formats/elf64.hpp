@@ -52,16 +52,16 @@ typedef struct {
   EI_OSABI ei_osabi;
   unsigned int ei_abiversion;
   E_TYPE e_type;
-  std::uint64_t e_entry;
-  std::uint64_t e_phoff;
-  std::uint64_t e_shoff;
-  std::int8_t e_flags;
-  std::int8_t e_ehsize;
-  std::int8_t e_phentsize;
-  std::int8_t e_phnum;
-  std::int8_t e_shentsize;
-  std::int8_t e_shnum;
-  std::int8_t e_shstrndx;
+  uint64_t e_entry;
+  uint64_t e_phoff;
+  uint64_t e_shoff;
+  int8_t e_flags;
+  int8_t e_ehsize;
+  int8_t e_phentsize;
+  int8_t e_phnum;
+  int8_t e_shentsize;
+  int8_t e_shnum;
+  int8_t e_shstrndx;
 } ELF_Header;
 
 enum P_TYPE : std::uint32_t {
@@ -140,31 +140,56 @@ enum SH_FLAGS : std::int64_t {
 };
 
 typedef struct {
-  std::int32_t sh_name;
+  int32_t sh_name;
   SH_TYPE sh_type;
   SH_FLAGS sh_flags;
-  std::int64_t sh_addr;
-  std::int64_t sh_offset;
-  std::int64_t sh_size;
-  std::int32_t sh_link;
-  std::int32_t sh_info;
-  std::int64_t sh_addralign;
-  std::int64_t sh_entsize;
+  int64_t sh_addr;
+  int64_t sh_offset;
+  int64_t sh_size;
+  int32_t sh_link;
+  int32_t sh_info;
+  int64_t sh_addralign;
+  int64_t sh_entsize;
 
 } SectionHeader;
+
+struct Rel {
+  uint64_t r_offset;
+  uint64_t r_info;
+};
+
+struct Rela : public Rel {
+  int64_t r_addend;
+};
+
+class Symbol {
+  private:
+  std::string name;
+  uint8_t st_info;
+  uint8_t st_other;
+  uint16_t st_shndx;
+  uint64_t st_value;
+  uint64_t st_size;
+
+  public:
+  Symbol(std::string name, uint8_t st_info, uint8_t st_other, uint16_t st_shndx, uint64_t st_value, uint64_t st_size);
+
+  std::string getName();
+};
 
 class Section {
   private:
   bool isLoad;
   std::string title; 
   SectionHeader* headers;
-  ProgramHeader* progHeaders; 
   uint8_t* payload;
 
 
   public:
-  Section(std::string, SectionHeader *seg, ProgramHeader *progHdr);
+  Section(std::string, SectionHeader *seg);
   ~Section();
+
+  SectionHeader* getHeader();
 
 };
 
@@ -175,16 +200,33 @@ class ELF {
 
   std::vector<ProgramHeader*> programHeaders;
   std::vector<SectionHeader*> sectionHeaders;
+  std::vector<Rel*> relHeaders;
+  std::vector<Rela*> relaHeaders;
+  std::vector<uint64_t> gotPointers;
+
   std::unordered_map<std::string, Section*> sections;
+  std::unordered_map<std::string, Symbol*> symbols;
 
   std::vector<ProgramHeader*> parseProgramHeaders();
   std::vector<SectionHeader*> parseSectionHeaders();
+  std::unordered_map<std::string, Symbol*> parseSymbolTable();
+  std::unordered_map<uint64_t, std::string> parseShStrTable();
+  std::unordered_map<uint64_t, std::string> parseStrTable();
+  std::vector<Rel*> parseRelTable(Section* secRelType);
+  std::vector<Rel*> parseRelTables();
+  std::vector<Rela*> parseRelaTable(Section* secRelType);
+  std::vector<Rela*> parseRelaTables();
+  std::vector<uint64_t> parseGotTable();
+  
+  
+
   ELF_Header parseELFHeader();
 
-  std::vector<std::string> parseStrTable();
+  std::unordered_map<uint64_t, std::string> separateASCIIZeroes(char* rawWords, uint64_t charsCount);
 
   public:
   ELF(std::filesystem::path pathToELF);
   ~ELF();
   Section* getSectionByName(std::string sectionName);
+  std::vector<Section*> getSectionsByShType(SH_TYPE type);
 };
