@@ -206,21 +206,22 @@ class ELF {
 
   std::unordered_map<std::string, Section*> sections;
   std::unordered_map<std::string, Symbol*> symbols;
+  std::unordered_map<std::string, Symbol*> dynSymbols;
 
   std::vector<ProgramHeader*> parseProgramHeaders();
   std::vector<SectionHeader*> parseSectionHeaders();
   std::unordered_map<std::string, Symbol*> parseSymbolTable();
+  std::unordered_map<std::string, Symbol*> parseDynSymbolTable();
   std::unordered_map<uint64_t, std::string> parseShStrTable();
   std::unordered_map<uint64_t, std::string> parseStrTable();
+  std::unordered_map<uint64_t, std::string> parseDynStrTable();
   std::vector<Rel*> parseRelTable(Section* secRelType);
   std::vector<Rel*> parseRelTables();
   std::vector<Rela*> parseRelaTable(Section* secRelType);
   std::vector<Rela*> parseRelaTables();
   std::vector<uint64_t> parseGotTable();
-  
-  
-
   ELF_Header parseELFHeader();
+
 
   std::unordered_map<uint64_t, std::string> separateASCIIZeroes(char* rawWords, uint64_t charsCount);
 

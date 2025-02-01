@@ -32,6 +32,7 @@ ELF::ELF(std::filesystem::path pathToELF) {
     relHeaders = parseRelTables();
     relaHeaders = parseRelaTables();
     gotPointers = parseGotTable();
+    dynSymbols = parseDynSymbolTable();
 
     elfFile.close();
 };
@@ -265,6 +266,44 @@ std::unordered_map<std::string, Symbol*> ELF::parseSymbolTable() {
     }
 
     return symbols;
+}
+
+
+std::unordered_map<std::string, Symbol*> ELF::parseDynSymbolTable() {
+    std::unordered_map<std::string, Symbol*> dynSymbols;
+    Section* dynSymbolSection = getSectionByName(".dynsym");
+    SectionHeader* dynSymSecHeader = dynSymbolSection->getHeader();
+    std::unordered_map<uint64_t, std::string> dynStrs = parseDynStrTable();
+    uint64_t recordCount = dynSymSecHeader->sh_size / dynSymSecHeader->sh_entsize;
+
+    char rawDynSymTab[dynSymSecHeader->sh_size];
+    elfFile->seekg(dynSymSecHeader->sh_offset, std::ios::beg);
+    elfFile->read(rawDynSymTab, dynSymSecHeader->sh_size);
+
+    for( auto i = 0 ; i < recordCount ; i++ ) {
+        uint64_t st_name = *(uint32_t*)(rawDynSymTab + i * dynSymSecHeader->sh_entsize);
+        uint8_t st_info = *(uint8_t*)(rawDynSymTab + i * dynSymSecHeader->sh_entsize + 4);
+        uint8_t st_other = *(uint8_t*)(rawDynSymTab + i * dynSymSecHeader->sh_entsize + 5);
+        uint16_t st_shndx = *(uint16_t*)(rawDynSymTab + i * dynSymSecHeader->sh_entsize + 6);
+        uint64_t st_value = *(uint64_t*)(rawDynSymTab + i * dynSymSecHeader->sh_entsize + 8);
+        uint64_t st_size = *(uint64_t*)(rawDynSymTab + i * dynSymSecHeader->sh_entsize + 16);
+
+        dynSymbols[dynStrs[st_name]] = new Symbol(dynStrs[st_name], st_info, st_other, st_shndx, st_value, st_size);
+    }
+
+    return dynSymbols;
+}
+
+std::unordered_map<uint64_t, std::string> ELF::parseDynStrTable() {
+    std::unordered_map<uint64_t, std::string> dynSymStrTable;      
+    Section* dynStr = getSectionByName(".dynstr");
+    SectionHeader* dynStrHeaders = dynStr->getHeader();
+
+    char rawDynSymStr[dynStrHeaders->sh_size];
+    elfFile->seekg(dynStrHeaders->sh_offset, std::ios::beg);
+    elfFile->read(rawDynSymStr, dynStrHeaders->sh_size);
+
+    return separateASCIIZeroes(rawDynSymStr, dynStrHeaders->sh_size);
 }
 
 std::vector<uint64_t> ELF::parseGotTable() {
