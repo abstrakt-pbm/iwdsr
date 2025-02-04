@@ -12,14 +12,12 @@ Type changeEndian(Type value) {
     return changedEndian;
 };
 
-
 ELF::ELF(std::filesystem::path pathToELF) {
-    std::fstream elfFile(pathToELF, std::ios::in | std::ios::binary );
-    if ( !elfFile.is_open() ) {
+    elfFile = new std::fstream(pathToELF, std::ios::in | std::ios::binary );
+    if ( !elfFile->is_open() ) {
         std::cout << "ELF file is not open" << std::endl;
         return;
     }
-    this->elfFile = &elfFile;
     elfHeader = parseELFHeader();
     sectionHeaders = parseSectionHeaders();
     programHeaders = parseProgramHeaders();
@@ -33,8 +31,6 @@ ELF::ELF(std::filesystem::path pathToELF) {
     relaHeaders = parseRelaTables();
     gotPointers = parseGotTable();
     dynSymbols = parseDynSymbolTable();
-
-    elfFile.close();
 };
 
 ELF::~ELF() {
@@ -325,14 +321,14 @@ std::vector<uint64_t> ELF::parseGotTable() {
 }
 
 Section* ELF::getSectionByName(std::string sectionName) {
+    Section* foundSection = nullptr;
     if ( sections.contains(sectionName) ) {
-        return sections[sectionName]; 
-    } else {
-        return nullptr;
+        foundSection = sections[sectionName]; 
     }
+    return foundSection;
 }
 
-std::vector<Section*> ELF::getSectionsByShType(SH_TYPE type){
+std::vector<Section*> ELF::getSectionsByShType(SH_TYPE type) {
     std::vector<Section*> secs;
     for( auto section : sections) {
         SectionHeader* secHeader = section.second->getHeader();
@@ -341,6 +337,23 @@ std::vector<Section*> ELF::getSectionsByShType(SH_TYPE type){
         }
     }    
     return secs;
+}
+
+std::vector<ProgramHeader*> ELF::getProgramHeadersByPType(P_TYPE pType) const {
+   std::vector<ProgramHeader*> suitablePheaders;
+   for ( auto header : programHeaders) {
+        if( header->p_type == pType) {
+            suitablePheaders.push_back(header);
+        }
+    }
+    return suitablePheaders; 
+}
+
+char* ELF::rawRead( uint64_t offset, uint64_t byteCount ) {
+    char* rawInput = new char[byteCount];
+    elfFile->seekg(offset, std::ios::beg);
+    elfFile->read(rawInput, byteCount);
+    return rawInput;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

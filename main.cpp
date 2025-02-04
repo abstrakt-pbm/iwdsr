@@ -3,8 +3,12 @@
 #include <cstdint>
 #include <vector>
 #include <chrono>
-#include "iwdsr/file-formats/elf64.hpp"
+#include "iwdsr/program/program.hpp"
+#include "iwdsr/loader/loader.hpp"
 
 int main() {
-    ELF file("C:\\Users\\pyumi\\Downloads\\a.out");
+    WinProgram prog;
+    ELF elf("C:\\Users\\pyumi\\Downloads\\a.out");
+    Loader loader;
+    loader.loadElf(elf, prog);
 }

@@ -1,8 +1,16 @@
 #pragma once
 #include "../file-formats/elf64.hpp"
 #include "symbol-resolver.hpp"
-#include "../pthread/pthread.hpp"
+#include "../program/program.hpp"
+
+
 class Loader {
+    private:
+    uint64_t calculatePageCount(uint64_t byteSize, uint64_t alignment);
+    bool loadSection(Program& prog, const Section& sectionToLoad);
+    bool loadSymbol(Program& prog, const Symbol& sectionToLoad);
+
     public:
-    ProcThread loadElf(const ELF& elfFile);
+    bool loadElf(ELF& elfFile, Program& prog);
+    bool loadDLL();
 };

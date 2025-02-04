@@ -90,13 +90,13 @@ enum P_FLAGS : std::uint32_t {
 typedef struct {
   P_TYPE p_type;
   P_FLAGS p_flag;
-  int p_offset;
-  int p_vaddr;
-  int p_paddr;
-  int p_filesz;
-  int p_memsz;
-  int p_flags;
-  int p_align;
+  uint64_t p_offset;
+  uint64_t p_vaddr;
+  uint64_t p_paddr;
+  uint64_t p_filesz;
+  uint64_t p_memsz;
+  uint32_t p_flags;
+  uint64_t p_align;
 
 } ProgramHeader;
 
@@ -182,6 +182,7 @@ class Rel {
 };
 
 class Rela : public Rel {
+  public:
   int64_t r_addend;
 };
 
@@ -253,4 +254,6 @@ class ELF {
   ~ELF();
   Section* getSectionByName(std::string sectionName);
   std::vector<Section*> getSectionsByShType(SH_TYPE type);
+  std::vector<ProgramHeader*> getProgramHeadersByPType(P_TYPE pType) const;
+  char* rawRead( uint64_t offset, uint64_t byteCount) ;
 };
