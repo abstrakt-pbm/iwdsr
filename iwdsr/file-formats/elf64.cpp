@@ -349,11 +349,11 @@ std::vector<ProgramHeader*> ELF::getProgramHeadersByPType(P_TYPE pType) const {
     return suitablePheaders; 
 }
 
-char* ELF::rawRead( uint64_t offset, uint64_t byteCount ) {
+int8_t* ELF::rawRead( uint64_t offset, uint64_t byteCount ) {
     char* rawInput = new char[byteCount];
     elfFile->seekg(offset, std::ios::beg);
     elfFile->read(rawInput, byteCount);
-    return rawInput;
+    return (int8_t*)(rawInput);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

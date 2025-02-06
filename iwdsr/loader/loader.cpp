@@ -1,14 +1,13 @@
 #include "loader.hpp"
 #include <iostream>
 
-bool Loader::loadElf(ELF& elfFile, Program& program) {
+bool Loader::loadElf(ELF& elfFile, Process& process) {
     bool isLoaded = true;
     std::vector<ProgramHeader*> loadableProgHeader = elfFile.getProgramHeadersByPType(P_TYPE::PT_LOAD);
-    ProgramMemory* progMem = program.getMemory();
+    ProcessMemory* procMem = process.getMemory();
     for ( auto lProgHeader : loadableProgHeader ) {
-        char* rawProgramPart = elfFile.rawRead(lProgHeader->p_offset, lProgHeader->p_memsz);
-        uint64_t pageCount = calculatePageCount(lProgHeader->p_memsz, lProgHeader->p_align);
-        progMem->allocatePages(lProgHeader->p_vaddr, allignmentToPageSize(lProgHeader->p_align), pageCount);
+        int8_t* rawProgramPart = elfFile.rawRead(lProgHeader->p_offset, lProgHeader->p_memsz);
+        procMem->allocate(lProgHeader->p_offset, lProgHeader->p_memsz, allignmentToPageSize(lProgHeader->p_align));
     }
     return isLoaded;
 }

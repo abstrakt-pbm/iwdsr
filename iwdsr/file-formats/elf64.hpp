@@ -255,5 +255,5 @@ class ELF {
   Section* getSectionByName(std::string sectionName);
   std::vector<Section*> getSectionsByShType(SH_TYPE type);
   std::vector<ProgramHeader*> getProgramHeadersByPType(P_TYPE pType) const;
-  char* rawRead( uint64_t offset, uint64_t byteCount) ;
+  int8_t* rawRead( uint64_t offset, uint64_t byteCount) ;
 };

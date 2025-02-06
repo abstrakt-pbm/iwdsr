@@ -9,15 +9,19 @@ set ( CORE_HEADERS
         "loader/loader.hpp"
         "memory/virtual-memory.hpp"
         "data-structures/rbtree/rbtree.hpp"
-        "program/program.hpp"
-        "program/mem.hpp"
+        "proc/proc.hpp"
+        "proc/procmem.hpp"
+        "proc/windows/winproc.hpp"
+        "proc/windows/winmem.hpp"
 )
 
 set ( CORE_SRC
         "file-formats/elf64.cpp"
         "loader/loader.cpp"
-        "program/program.cpp"
-        "program/mem.cpp"
+        "proc/proc.cpp"
+        "proc/procmem.cpp"
+        "proc/windows/winproc.cpp"
+        "proc/windows/winmem.cpp"
 )
 
 add_library(CORE STATIC ${CORE_HEDERS} ${CORE_SRC})
