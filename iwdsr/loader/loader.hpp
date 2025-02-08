@@ -11,6 +11,6 @@ class Loader {
     bool loadSymbol(Process& proc, const Symbol& sectionToLoad);
 
     public:
-    bool loadElf(ELF& elfFile, Process& proc);
-    bool loadDLL();
+    void loadElf(ELF& elfFile, Process& proc);
+    void loadDLL();
 };

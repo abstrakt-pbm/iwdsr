@@ -75,9 +75,6 @@ void WinProcMemory::clearAddressSpace() {
     }
 }
 
-void WinProcMemory::clearStack() {
-
-}
 
 void WinProcMemory::loadNtFunctions() {
     NtAllocateVirtualMemoryEx = (pNtAllocateVirtualMemoryEx)GetProcAddress(ntdllHmod, "NtAllocateVirtualMemoryEx");

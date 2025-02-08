@@ -7,6 +7,7 @@ set( CMAKE_CXX_STANDARD 20 )
 set ( CORE_HEADERS
         "file-formats/elf64.hpp"
         "loader/loader.hpp"
+        "loader/memblock.hpp"
         "memory/virtual-memory.hpp"
         "data-structures/rbtree/rbtree.hpp"
         "proc/proc.hpp"
@@ -18,6 +19,7 @@ set ( CORE_HEADERS
 set ( CORE_SRC
         "file-formats/elf64.cpp"
         "loader/loader.cpp"
+        "loader/memblock.cpp"
         "proc/proc.cpp"
         "proc/procmem.cpp"
         "proc/windows/winproc.cpp"

@@ -80,7 +80,7 @@ private:
 
     void loadNtFunctions();
     virtual void clearAddressSpace() override;
-    void clearStack();
+
 public:
     WinProcMemory(HMODULE ntdllHandle, HANDLE procHandle);
     virtual uint64_t allocate(uint64_t baseAddress, uint64_t byteCount ,PAGE_SIZE pageSize) override;
