@@ -12,6 +12,7 @@ enum PAGE_SIZE {
 PAGE_SIZE allignmentToPageSize(uint64_t allignment);
 
 class ProcessMemory {
+    virtual void clearAddressSpace() = 0;
 public:
     virtual uint64_t allocate(uint64_t baseAddress, uint64_t byteCount ,PAGE_SIZE pageSize) = 0;
     virtual void dealloc(uint64_t addr) = 0;

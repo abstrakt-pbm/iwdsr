@@ -13,19 +13,21 @@ WinProc::WinProc() {
     ZeroMemory(secDesc, sizeof(SECURITY_DESCRIPTOR));
 
     InitializeObjectAttributes(objAttr, NULL, 0, NULL, NULL);
-    secDesc->Dacl = NULL;
+    InitializeSecurityDescriptor(secDesc, 1);
+    SetSecurityDescriptorDacl(secDesc, TRUE, NULL, FALSE);
     
+    objAttr->SecurityDescriptor = secDesc; 
 
     NTSTATUS creationStatus = NtCreateProcessEx(
         &procHandle,
         PROCESS_ALL_ACCESS,
-        objAttr,
+        NULL,
         GetCurrentProcess(),
-        CREATE_SUSPENDED,
+        0x1,
         NULL,
         NULL,
         NULL,
-        FALSE
+        0
     );
 
     if ( creationStatus == 0 ) {

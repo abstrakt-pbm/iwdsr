@@ -26,9 +26,9 @@ class WinProc : public Process {
     pNtCreateProcessEx NtCreateProcessEx;
 
     void loadNtFunctions();
-
     public:
     WinProc();
     virtual void start() override;
     virtual void stop() override;
+
 };

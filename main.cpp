@@ -8,9 +8,10 @@
 
 int main() {
     Process* proc = new WinProc();
+    ProcessMemory* m = proc->getMemory();
+    m->allocate(0x0000, 0x100000, PAGE_SIZE::KB_4);
     //ELF elf("C:\\Users\\pyumi\\Downloads\\a.out");
     //Loader loader;
     //loader.loadElf(elf, prog);
-    //ProcessMemory* emm = proc.getMemory();
-    //emm->allocate(0x10000, 0x1000, PAGE_SIZE::KB_4);
+    for(;;);
 }
