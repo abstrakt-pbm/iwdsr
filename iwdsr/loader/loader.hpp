@@ -6,7 +6,6 @@
 
 class Loader {
     private:
-    uint64_t calculatePageCount(uint64_t byteSize, uint64_t alignment);
     bool loadSection(Process& proc, const Section& sectionToLoad);
     bool loadSymbol(Process& proc, const Symbol& sectionToLoad);
 

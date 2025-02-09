@@ -26,8 +26,6 @@ uint64_t WinProcMemory::allocate(uint64_t baseAddress, uint64_t byteCount ,PAGE_
         &mbi,
         sizeof(MEMORY_BASIC_INFORMATION)
     );
-    std::cout << mbi.State << std::endl;
-    
 
     SIZE_T regionSize = byteCount;
     uint64_t addrWoffset = baseAddress + BASE_OFFSET;
@@ -50,15 +48,25 @@ uint64_t WinProcMemory::allocate(uint64_t baseAddress, uint64_t byteCount ,PAGE_
     return 0;
 }
 
-
-
-
-
 void WinProcMemory::dealloc(uint64_t) {
     
 }
 
 void WinProcMemory::writeMem(uint64_t baseAddress, int8_t* payload, uint64_t byteCount) {
+    SIZE_T writtenBytes = 0;
+    uint64_t addr = baseAddress + BASE_OFFSET;
+    bool res = WriteProcessMemory(
+        procHandle,
+        &addr,
+        payload,
+        byteCount,
+        &writtenBytes
+    );
+    if ( !res ) {
+        std::cerr << "Error while writing process memory" << GetLastError() << std::endl;
+    } else {
+        std::cout << "Mapped" << std::endl;
+    }
 }
 
 uint8_t* WinProcMemory::readMem(uint64_t baseAddress, uint64_t byteCount) {
@@ -74,7 +82,6 @@ void WinProcMemory::clearAddressSpace() {
         currentAddress = (PVOID)((BYTE*)mbi.BaseAddress + mbi.RegionSize);
     }
 }
-
 
 void WinProcMemory::loadNtFunctions() {
     NtAllocateVirtualMemoryEx = (pNtAllocateVirtualMemoryEx)GetProcAddress(ntdllHmod, "NtAllocateVirtualMemoryEx");
