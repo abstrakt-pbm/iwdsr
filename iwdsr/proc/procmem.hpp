@@ -17,7 +17,7 @@ public:
     virtual uint64_t allocate(uint64_t baseAddress, uint64_t byteCount ,PAGE_SIZE pageSize) = 0;
     virtual void dealloc(uint64_t addr) = 0;
     virtual void writeMem(uint64_t baseAddress, int8_t* payload, uint64_t byteCount) = 0; 
-    virtual uint8_t* readMem(uint64_t baseAddress, uint64_t byteCount) = 0; 
+    virtual int8_t* readMem(uint64_t baseAddress, uint64_t byteCount) = 0; 
 
 };
 

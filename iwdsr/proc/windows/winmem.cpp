@@ -22,11 +22,12 @@ uint64_t WinProcMemory::allocate(uint64_t baseAddress, uint64_t byteCount ,PAGE_
     MEMORY_BASIC_INFORMATION mbi;
     VirtualQueryEx(
         procHandle,
-        (LPCVOID)baseAddress,
+        (LPCVOID)(baseAddress + BASE_OFFSET),
         &mbi,
         sizeof(MEMORY_BASIC_INFORMATION)
     );
 
+    std::cout << std::hex << mbi.State << std::endl;
     SIZE_T regionSize = byteCount;
     uint64_t addrWoffset = baseAddress + BASE_OFFSET;
     NTSTATUS allocationResult = NtAllocateVirtualMemoryEx(
@@ -69,8 +70,24 @@ void WinProcMemory::writeMem(uint64_t baseAddress, int8_t* payload, uint64_t byt
     }
 }
 
-uint8_t* WinProcMemory::readMem(uint64_t baseAddress, uint64_t byteCount) {
-    return 0;
+int8_t* WinProcMemory::readMem(uint64_t baseAddress, uint64_t byteCount) {
+    SIZE_T readed = 0;
+    uint64_t addr = baseAddress + BASE_OFFSET;
+    char* rawRead = new char[byteCount];
+    bool readRes = ReadProcessMemory(
+        procHandle,
+        &addr,
+        rawRead,
+        byteCount,
+        &readed
+    );
+
+    if ( !readRes ) {
+        std::cerr << "Error while reading proccess memory" << std::endl;
+    } else {
+        std::cout << "Readed: " << readed << " " << "bytes" << std::endl;
+    }
+    return (int8_t*)rawRead;
 }
 
 void WinProcMemory::clearAddressSpace() {

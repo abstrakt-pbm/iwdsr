@@ -17,8 +17,6 @@ class Process {
 protected:
     ProcessMemory* mem;
 public:
-    bool writeMemory(); 
-    int64_t readMemory();
     ProcessMemory* getMemory();
     virtual void start() = 0;
     virtual void stop() = 0;
