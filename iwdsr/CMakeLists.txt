@@ -12,8 +12,10 @@ set ( CORE_HEADERS
         "data-structures/rbtree/rbtree.hpp"
         "proc/proc.hpp"
         "proc/procmem.hpp"
-        "proc/windows/winproc.hpp"
-        "proc/windows/winmem.hpp"
+        #"proc/windows/winproc.hpp"
+        #"proc/windows/winmem.hpp"
+        "proc/posix/posixproc.hpp"
+        "proc/posix/posixmem.hpp"
 )
 
 set ( CORE_SRC
@@ -22,8 +24,10 @@ set ( CORE_SRC
         "loader/memblock.cpp"
         "proc/proc.cpp"
         "proc/procmem.cpp"
-        "proc/windows/winproc.cpp"
-        "proc/windows/winmem.cpp"
+        #"proc/windows/winproc.cpp"
+        #"proc/windows/winmem.cpp"
+        "proc/posix/posixproc.cpp"
+        "proc/posix/posixmem.cpp"
 )
 
 add_library(CORE STATIC ${CORE_HEDERS} ${CORE_SRC})

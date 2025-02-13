@@ -1,6 +1,7 @@
 #include "loader.hpp"
 #include <iostream>
 
+
 void Loader::loadElf(ELF& elfFile, Process& process) {
     std::vector<ProgramHeader*> loadableProgHeader = elfFile.getProgramHeadersByPType(P_TYPE::PT_LOAD);
     ProcessMemory* procMem = process.getMemory();

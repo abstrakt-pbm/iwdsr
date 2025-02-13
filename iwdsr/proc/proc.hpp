@@ -22,4 +22,3 @@ public:
     virtual void stop() = 0;
     
 };
-
