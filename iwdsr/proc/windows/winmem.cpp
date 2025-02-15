@@ -7,8 +7,8 @@
 
 
 
-PAGE_SIZE allignmentToPageSize(uint64_t allignment) {
-    return static_cast<PAGE_SIZE>(allignment);
+P_SIZE allignmentToPageSize(uint64_t allignment) {
+    return static_cast<P_SIZE>(allignment);
 }
 
 WinProcMemory::WinProcMemory(HMODULE ntdllHandle, HANDLE procHandle) {
@@ -18,7 +18,7 @@ WinProcMemory::WinProcMemory(HMODULE ntdllHandle, HANDLE procHandle) {
     clearAddressSpace();
 }
 
-uint64_t WinProcMemory::allocate(uint64_t baseAddress, uint64_t byteCount ,PAGE_SIZE pageSize) {
+uint64_t WinProcMemory::allocate(uint64_t baseAddress, uint64_t byteCount ,P_SIZE pageSize) {
     MEMORY_BASIC_INFORMATION mbi;
     VirtualQueryEx(
         procHandle,
@@ -58,7 +58,7 @@ void WinProcMemory::writeMem(uint64_t baseAddress, int8_t* payload, uint64_t byt
     uint64_t addr = baseAddress + BASE_OFFSET;
     bool res = WriteProcessMemory(
         procHandle,
-        &addr,
+        (LPVOID)addr,
         payload,
         byteCount,
         &writtenBytes
@@ -76,7 +76,7 @@ int8_t* WinProcMemory::readMem(uint64_t baseAddress, uint64_t byteCount) {
     char* rawRead = new char[byteCount];
     bool readRes = ReadProcessMemory(
         procHandle,
-        &addr,
+        (LPVOID)addr,
         rawRead,
         byteCount,
         &readed

@@ -1,6 +1,10 @@
 #pragma once
+
 #include <cstdint>
+#include <unordered_map>
+#include <string>
 #include <fstream>
+
 #include "procmem.hpp"
 
 enum MemoryAccess {
@@ -13,9 +17,11 @@ enum MemoryAccess {
     WE
 };
 
+
 class Process {
 protected:
     ProcessMemory* mem;
+
 public:
     ProcessMemory* getMemory();
     virtual void start() = 0;

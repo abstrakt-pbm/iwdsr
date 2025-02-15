@@ -7,6 +7,8 @@ void Loader::loadElf(ELF& elfFile, Process& process) {
     ProcessMemory* procMem = process.getMemory();
     for ( auto lProgHeader : loadableProgHeader ) {
         int8_t* rawProgramPart = elfFile.rawRead(lProgHeader->p_offset, lProgHeader->p_memsz);
+        procMem->writeMem(lProgHeader->p_vaddr, rawProgramPart, lProgHeader->p_memsz);
+        delete rawProgramPart;
     }
 }
 

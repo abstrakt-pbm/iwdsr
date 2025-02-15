@@ -1,6 +1,5 @@
 #pragma once
 #include "../file-formats/elf64.hpp"
-#include "symbol-resolver.hpp"
 #include "../proc/proc.hpp"
 
 
