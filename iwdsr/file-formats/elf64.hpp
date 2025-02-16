@@ -308,6 +308,8 @@ class ELF {
   std::vector<Rel*> relHeaders;
   std::vector<Rela*> relaHeaders;
   std::vector<uint64_t> gotPointers;
+  
+  std::unordered_map<uint64_t, std::string> dynStrs;
 
   std::unordered_map<std::string, Section*> sections;
   std::unordered_map<std::string, Symbol*> symbols;
@@ -327,6 +329,7 @@ class ELF {
   std::vector<uint64_t> parseGotTable();
   ELF_Header parseELFHeader();
   std::vector<ELF_DYN*> parseDynamicTable();
+  std::vector<std::string> parseLibDependedcise();
   std::unordered_map<uint64_t, std::string> separateASCIIZeroes(char* rawWords, uint64_t charsCount);
 
   public:
@@ -334,6 +337,8 @@ class ELF {
   ~ELF();
   Section* getSectionByName(std::string sectionName);
   std::vector<Section*> getSectionsByShType(SH_TYPE type);
+  std::vector<ELF_DYN*> getDynamicRecordsByDtTag(DT_TAG dtTag);
   std::vector<ProgramHeader*> getProgramHeadersByPType(P_TYPE pType) const;
   int8_t* rawRead( uint64_t offset, uint64_t byteCount) ;
+  std::vector<std::string> getLibDependencies();
 };

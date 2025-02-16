@@ -32,6 +32,8 @@ ELF::ELF(std::filesystem::path pathToELF) {
     gotPointers = parseGotTable();
     dynSymbols = parseDynSymbolTable();
     dynamicTable = parseDynamicTable();
+    libDependencies = parseLibDependedcise();
+
 };
 
 ELF::~ELF() {
@@ -269,7 +271,7 @@ std::unordered_map<std::string, Symbol*> ELF::parseDynSymbolTable() {
     std::unordered_map<std::string, Symbol*> dynSymbols;
     Section* dynSymbolSection = getSectionByName(".dynsym");
     SectionHeader* dynSymSecHeader = dynSymbolSection->getHeader();
-    std::unordered_map<uint64_t, std::string> dynStrs = parseDynStrTable();
+    dynStrs = parseDynStrTable();
     uint64_t recordCount = dynSymSecHeader->sh_size / dynSymSecHeader->sh_entsize;
 
     char rawDynSymTab[dynSymSecHeader->sh_size];
@@ -318,6 +320,25 @@ std::vector<ELF_DYN*> ELF::parseDynamicTable() {
         dynamicTable.push_back(dyn);
     }
     return dynamicTable;
+}
+
+std::vector<std::string> ELF::parseLibDependedcise() {
+    std::vector<std::string> libsStr;
+    std::vector<ELF_DYN*> elfDyn = getDynamicRecordsByDtTag(DT_TAG::DT_NEEDED);
+    for ( auto dyn : elfDyn ) {
+        libsStr.push_back(dynStrs[dyn->d_un.d_val]);
+    }
+    return libsStr;
+}
+
+std::vector<ELF_DYN*> ELF::getDynamicRecordsByDtTag(DT_TAG dtTag) {
+    std::vector<ELF_DYN*> dynRecs;
+    for ( auto record : dynamicTable) {
+        if ( record->type == dtTag ) {
+            dynRecs.push_back(record);
+        }
+    }
+    return dynRecs;
 }
 
 std::vector<uint64_t> ELF::parseGotTable() {
@@ -372,6 +393,10 @@ int8_t* ELF::rawRead( uint64_t offset, uint64_t byteCount ) {
     elfFile->seekg(offset, std::ios::beg);
     elfFile->read(rawInput, byteCount);
     return (int8_t*)(rawInput);
+}
+
+std::vector<std::string> ELF::getLibDependencies() {
+    return this->libDependencies;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

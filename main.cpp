@@ -9,7 +9,6 @@
 int main() {
     WinProc proc;
     ProcessMemory* m = proc.getMemory();
-    int8_t payload = 7;
     m->allocate(0x0000, P_SIZE::GB_1, P_SIZE::KB_4);
     ELF elf("C:\\Users\\pyumi\\Downloads\\a.out");
     Loader loader;
