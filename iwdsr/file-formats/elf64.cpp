@@ -31,6 +31,7 @@ ELF::ELF(std::filesystem::path pathToELF) {
     relaHeaders = parseRelaTables();
     gotPointers = parseGotTable();
     dynSymbols = parseDynSymbolTable();
+    dynamicTable = parseDynamicTable();
 };
 
 ELF::~ELF() {
@@ -264,7 +265,6 @@ std::unordered_map<std::string, Symbol*> ELF::parseSymbolTable() {
     return symbols;
 }
 
-
 std::unordered_map<std::string, Symbol*> ELF::parseDynSymbolTable() {
     std::unordered_map<std::string, Symbol*> dynSymbols;
     Section* dynSymbolSection = getSectionByName(".dynsym");
@@ -300,6 +300,24 @@ std::unordered_map<uint64_t, std::string> ELF::parseDynStrTable() {
     elfFile->read(rawDynSymStr, dynStrHeaders->sh_size);
 
     return separateASCIIZeroes(rawDynSymStr, dynStrHeaders->sh_size);
+}
+
+std::vector<ELF_DYN*> ELF::parseDynamicTable() {
+    std::vector<ELF_DYN*> dynamicTable;
+    Section* dynamicTableSec = getSectionByName(".dynamic");
+    SectionHeader* dynTabHeaders = dynamicTableSec->getHeader();
+    uint64_t recordCount = dynTabHeaders->sh_size / dynTabHeaders->sh_entsize;
+    char rawDynamicTable[dynTabHeaders->sh_size];
+    elfFile->seekg(dynTabHeaders->sh_offset, std::ios::beg);
+    elfFile->read(rawDynamicTable, dynTabHeaders->sh_size);
+
+    for ( auto i = 0 ; i < recordCount ; i++ ) {
+        ELF_DYN* dyn = new ELF_DYN;
+        dyn->type = static_cast<DT_TAG>(*(uint64_t*)(rawDynamicTable + i*dynTabHeaders->sh_entsize));
+        dyn->d_un.d_val = *(uint64_t*)(rawDynamicTable + i*dynTabHeaders->sh_entsize + 8);
+        dynamicTable.push_back(dyn);
+    }
+    return dynamicTable;
 }
 
 std::vector<uint64_t> ELF::parseGotTable() {

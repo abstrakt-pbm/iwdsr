@@ -201,6 +201,85 @@ class Symbol {
   std::string getName();
 };
 
+enum DT_TAG {
+  DT_NULL,
+  DT_NEEDED,
+  DT_PLTRELSZ,
+  DT_PLTGOT,
+  DT_HASH,
+  DT_STRTAB,
+  DT_SYMTAB,
+  DT_RELA,
+  DT_RELASZ,
+  DT_RELAENT,
+  DT_STRSZ,
+  DT_SYMENT,
+  DT_INIT,
+  DT_FINI,
+  DT_SONAME,
+  DT_RPATH,
+  DT_SYMBOLIC,
+  DT_REL,
+  DT_RELSZ,
+  DT_RELENT,
+  DT_PLTREL,
+  DT_DEBUG,
+  DT_TEXTREL,
+  DT_JMPREL,
+  DT_BIND_NOW,
+  DT_INIT_ARRAY,
+  DT_FINI_ARRAY,
+  DT_INIT_ARRAYSZ,
+  DT_FINI_ARRAYSZ,
+  DT_RUNPATH,
+  DT_FLAGS,
+  DT_ENCODING,
+  DT_PREINIT_ARRAY,
+  DT_PREINIT_ARRAYSZ,
+  DT_LOOS,
+  DT_SUNW_RTLDINF,
+  DT_HIOS,
+  DT_VALRNGLO,
+  DT_CHECKSUM,
+  DT_PLTPADSZ,
+  DT_MOVEENT,
+  DT_MOVESZ,
+  DT_FEATURE_1,
+  DT_POSFLAG_1,
+  DT_SYMINSZ,
+  DT_SYMINENT,
+  DT_VALRNGHI,
+  DT_ADDRRNGLO,
+  DT_CONFIG,
+  DT_DEPAUDIT,
+  DT_AUDIT,
+  DT_PLTPAD,
+  DT_MOVETAB,
+  DT_SYMINFO,
+  DT_ADDRRNGHI,
+  DT_RELACOUNT,
+  DT_RELCOUNT,
+  DT_FLAGS_1,
+  DT_VERDEF,
+  DT_VERDEFNUM,
+  DT_VERNEED,
+  DT_VERNEEDNUM,
+  DT_LOPROC,
+  DT_SPARC_REGISTER,
+  DT_AUXILIARY,
+  DT_USED,
+  DT_FILTER ,
+  DT_HIPROC = 0x7fffffff
+};
+
+typedef struct {
+  DT_TAG type;
+  union {
+    uint64_t d_val;
+    uint64_t d_ptr;
+  } d_un;
+} ELF_DYN;
+
 class Section {
   private:
   bool isLoad;
@@ -214,13 +293,15 @@ class Section {
   ~Section();
 
   SectionHeader* getHeader();
-
 };
 
 class ELF {
   private:
   std::fstream* elfFile;
   ELF_Header elfHeader;
+
+  std::vector<std::string> libDependencies;
+  std::vector<ELF_DYN*> dynamicTable;
 
   std::vector<ProgramHeader*> programHeaders;
   std::vector<SectionHeader*> sectionHeaders;
@@ -245,8 +326,7 @@ class ELF {
   std::vector<Rela*> parseRelaTables();
   std::vector<uint64_t> parseGotTable();
   ELF_Header parseELFHeader();
-
-
+  std::vector<ELF_DYN*> parseDynamicTable();
   std::unordered_map<uint64_t, std::string> separateASCIIZeroes(char* rawWords, uint64_t charsCount);
 
   public:
