@@ -8,9 +8,11 @@ namespace SR {
 
 class Symbol {
     private:
+    std::vector<Symbol*> dependendFrom;
     std::string name;
     bool isLoaded;
     int8_t* rawSymbol;
+
     
     public:
     Symbol(std::string name, int8_t* payload = nullptr);
