@@ -1,4 +1,5 @@
 #pragma once
+
 #include "../file-formats/elf64.hpp"
 #include <cstdint>
 #include <unordered_map>
@@ -8,31 +9,27 @@ namespace SR {
 
 class Symbol {
     private:
-    std::vector<Symbol*> dependendFrom;
     std::string name;
     bool isLoaded;
+    uint64_t startAddr;
     int8_t* rawSymbol;
 
-    
-    public:
-    Symbol(std::string name, int8_t* payload = nullptr);
 
-    void fill(int8_t* payload);
-    bool getIsLoaded();
-    int8_t* getRaw();
+    public:
+    Symbol();
+
+    bool isLoaded();
+    uint64_t getStartAddr();
+    std::string getName();
 };
 
-class SymbolTree {
-    private:
-    public:
-};
 
-class SymbolResolver { //Ведёт учёт всех длл и символов
+class SymbolResolver { 
 private:
-    std::unordered_map<std::string, ELF*> loadedDlls;
 public:
-    SymbolResolver( ELF& rootElf);
-    void attachDLL( ELF& dll);
+    SymbolResolver( ELF& rootElf );
+    void attachSymbol(Symbol* symbol);
+    uint64_t whereSymbol(std::string symbolName);
     
 };
 
