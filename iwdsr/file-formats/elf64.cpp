@@ -3,6 +3,8 @@
 #include <string>
 #include <span>
 
+using namespace ELF_PARSER;
+
 template<typename Type>
 Type changeEndian(Type value) {
     Type changedEndian;
@@ -399,6 +401,18 @@ std::vector<std::string> ELF::getLibDependencies() {
     return this->libDependencies;
 }
 
+std::unordered_map<std::string, Symbol*> ELF::getSymbols() {
+    return this->symbols;
+}
+
+std::vector<Rel*> ELF::getRels() {
+    return this->relHeaders;
+}
+
+std::vector<Rela*> ELF::getRelas() {
+    return this->relaHeaders;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Section::Section(std::string title, SectionHeader *segHdr) {
@@ -426,6 +440,10 @@ std::string Symbol::getName() {
     return this->name;
 }
 
+bool Symbol::addrInSymbol( uint64_t addr ) {
+    return addr >= st_value && addr < (st_value + st_size);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 uint64_t Rel::getSymbolId(){
@@ -436,3 +454,4 @@ uint64_t Rel::getSymbolId(){
 RelocationType Rel::getRelocationType() {
     return static_cast<RelocationType>(r_info & 0xFFFFFFFF );
 }
+

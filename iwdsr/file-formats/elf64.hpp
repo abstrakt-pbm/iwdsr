@@ -5,6 +5,9 @@
 #include <fstream>
 #include <unordered_map>
 
+namespace ELF_PARSER {
+
+
 enum EI_CLASS : char {
   ELFCLASSNONE,
   ELFCLASS32,
@@ -199,6 +202,7 @@ class Symbol {
   Symbol(std::string name, uint8_t st_info, uint8_t st_other, uint16_t st_shndx, uint64_t st_value, uint64_t st_size);
 
   std::string getName();
+  bool addrInSymbol(uint64_t addr);
 };
 
 enum DT_TAG {
@@ -339,6 +343,14 @@ class ELF {
   std::vector<Section*> getSectionsByShType(SH_TYPE type);
   std::vector<ELF_DYN*> getDynamicRecordsByDtTag(DT_TAG dtTag);
   std::vector<ProgramHeader*> getProgramHeadersByPType(P_TYPE pType) const;
-  int8_t* rawRead( uint64_t offset, uint64_t byteCount) ;
+  int8_t* rawRead( uint64_t offset, uint64_t byteCount);
   std::vector<std::string> getLibDependencies();
+  std::unordered_map<std::string, Symbol*> getSymbols(); 
+  int8_t* fetchRawSymbolByName( std::string symbolName);
+  std::vector<Rel*> getRels();
+  std::vector<Rela*> getRelas();
+
+
 };
+
+}
