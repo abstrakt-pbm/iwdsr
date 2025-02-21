@@ -203,6 +203,9 @@ class Symbol {
 
   std::string getName();
   bool addrInSymbol(uint64_t addr);
+  uint16_t getId();
+  uint64_t getBaseAddr();
+  uint64_t getSize();
 };
 
 enum DT_TAG {
@@ -346,10 +349,10 @@ class ELF {
   int8_t* rawRead( uint64_t offset, uint64_t byteCount);
   std::vector<std::string> getLibDependencies();
   std::unordered_map<std::string, Symbol*> getSymbols(); 
+  Symbol* getSymbolById(uint16_t id);
   int8_t* fetchRawSymbolByName( std::string symbolName);
   std::vector<Rel*> getRels();
   std::vector<Rela*> getRelas();
-
 
 };
 

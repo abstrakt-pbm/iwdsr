@@ -173,8 +173,8 @@ std::vector<Rel*> ELF::parseRelTable(Section* relTypeSection) {
 
     for ( auto i = 0 ; i < recordCount ; i++ ) {
         Rel* currentRel = new Rel;
-        currentRel->r_info = *(uint64_t*)(rawTable + i * rtsHeader->sh_entsize);
-        currentRel->r_offset = *(uint64_t*)(rawTable + i * rtsHeader->sh_entsize + 8); 
+        currentRel->r_offset = *(uint64_t*)(rawTable + i * rtsHeader->sh_entsize);
+        currentRel->r_info = *(uint64_t*)(rawTable + i * rtsHeader->sh_entsize + 8); 
         rels.push_back(currentRel);
     }
 
@@ -194,26 +194,29 @@ std::vector<Rela*> ELF::parseRelaTables() {
 }
 
 std::vector<Rela*> ELF::parseRelaTable(Section* relaTypeSection) {
-   SectionHeader* relatsHeader = relaTypeSection->getHeader(); 
-   std::vector<Rela*> relas;
+    SectionHeader* relatsHeader = relaTypeSection->getHeader(); 
+    std::vector<Rela*> relas;
 
-   if (relatsHeader->sh_type != SH_TYPE::SHT_RELA) {
+    if (relatsHeader->sh_type != SH_TYPE::SHT_RELA) {
         return relas;
-   }
+    }
+    char rawRelaTable[relatsHeader->sh_size];
+    elfFile->seekg(relatsHeader->sh_offset, std::ios::beg);
+    elfFile->read(rawRelaTable, relatsHeader->sh_size);
 
-   char rawRelaTable[relatsHeader->sh_size];
-
-   elfFile->seekg(relatsHeader->sh_offset);
-   elfFile->read(rawRelaTable, std::ios::beg);
-
-   uint64_t recordCount = relatsHeader->sh_size / relatsHeader->sh_entsize;
-   for ( auto i = 0 ; i < recordCount ; i++ ) {
+    for ( auto ch : rawRelaTable) {
+        std::cout << std::hex << (int)ch <<  std::endl;
+    }
+   
+    
+    uint64_t recordCount = relatsHeader->sh_size / relatsHeader->sh_entsize;
+    for ( auto i = 0 ; i < recordCount ; i++ ) {
         Rela* currentRela = new Rela;
-        currentRela->r_info = *(uint64_t*)(rawRelaTable + i * relatsHeader->sh_entsize);
-        currentRela->r_offset = *(uint64_t*)(rawRelaTable + i * relatsHeader->sh_entsize + 8);
+        currentRela->r_offset = *(uint64_t*)(rawRelaTable + i * relatsHeader->sh_entsize);
+        currentRela->r_info = *(uint64_t*)(rawRelaTable + i * relatsHeader->sh_entsize + 8);
         currentRela->r_addend = *(int64_t*)(rawRelaTable + i * relatsHeader->sh_entsize + 16);
         relas.push_back(currentRela);
-   }
+    }
 
    return relas;
 }
@@ -413,6 +416,24 @@ std::vector<Rela*> ELF::getRelas() {
     return this->relaHeaders;
 }
 
+Symbol* ELF::getSymbolById(uint16_t id) {
+    Symbol* res = nullptr;
+    for ( auto symb : symbols ) {
+        if ( symb.second->getId() == id) {
+            res = symb.second;
+        }
+    } 
+    return res;
+}
+
+int8_t* ELF::fetchRawSymbolByName( std::string symbolName) {
+    Symbol* symb = symbols[symbolName];
+
+    char* rawSymbol = new char[symb->getSize()];
+    elfFile->seekg( symb->getBaseAddr(), std::ios::beg );
+    elfFile->read(rawSymbol, symb->getSize());
+    return (int8_t*)rawSymbol;
+}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Section::Section(std::string title, SectionHeader *segHdr) {
@@ -441,7 +462,19 @@ std::string Symbol::getName() {
 }
 
 bool Symbol::addrInSymbol( uint64_t addr ) {
-    return addr >= st_value && addr < (st_value + st_size);
+    return addr >= st_value && addr < (st_value + st_size + 1);
+}
+
+uint16_t Symbol::getId() {
+    return this->st_shndx;
+}
+
+uint64_t Symbol::getBaseAddr() {
+    return this->st_value;
+}
+
+uint64_t Symbol::getSize() {
+    return this->st_size;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
