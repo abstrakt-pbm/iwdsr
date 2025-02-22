@@ -5,10 +5,8 @@
 
 class Loader {
     private:
-    bool loadSection(Process& proc, const Section& sectionToLoad);
-    bool loadSymbol(Process& proc, const Symbol& sectionToLoad);
 
     public:
-    void loadElf(ELF& elfFile, Process& proc);
+    void loadElf(ELF_PARSER::ELF& elfFile, Process& proc);
     void loadDLL();
 };

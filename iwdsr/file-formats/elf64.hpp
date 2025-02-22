@@ -317,6 +317,7 @@ class ELF {
   std::vector<uint64_t> gotPointers;
   
   std::unordered_map<uint64_t, std::string> dynStrs;
+  std::unordered_map<uint64_t, std::string> shstrTab;
 
   std::unordered_map<std::string, Section*> sections;
   std::unordered_map<std::string, Symbol*> symbols;
@@ -342,6 +343,7 @@ class ELF {
   public:
   ELF(std::filesystem::path pathToELF);
   ~ELF();
+
   Section* getSectionByName(std::string sectionName);
   std::vector<Section*> getSectionsByShType(SH_TYPE type);
   std::vector<ELF_DYN*> getDynamicRecordsByDtTag(DT_TAG dtTag);
@@ -353,7 +355,6 @@ class ELF {
   int8_t* fetchRawSymbolByName( std::string symbolName);
   std::vector<Rel*> getRels();
   std::vector<Rela*> getRelas();
-
 };
 
 }

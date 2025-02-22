@@ -23,7 +23,7 @@ ELF::ELF(std::filesystem::path pathToELF) {
     elfHeader = parseELFHeader();
     sectionHeaders = parseSectionHeaders();
     programHeaders = parseProgramHeaders();
-    std::unordered_map<uint64_t, std::string> shstrTab = parseShStrTable();
+    shstrTab = parseShStrTable();
     for ( auto i = 0 ; i < sectionHeaders.size() ; i++ ) {
         sections[shstrTab[sectionHeaders[i]->sh_name]] = new Section(shstrTab[sectionHeaders[i]->sh_name], sectionHeaders[i]);
     }
@@ -204,11 +204,6 @@ std::vector<Rela*> ELF::parseRelaTable(Section* relaTypeSection) {
     elfFile->seekg(relatsHeader->sh_offset, std::ios::beg);
     elfFile->read(rawRelaTable, relatsHeader->sh_size);
 
-    for ( auto ch : rawRelaTable) {
-        std::cout << std::hex << (int)ch <<  std::endl;
-    }
-   
-    
     uint64_t recordCount = relatsHeader->sh_size / relatsHeader->sh_entsize;
     for ( auto i = 0 ; i < recordCount ; i++ ) {
         Rela* currentRela = new Rela;

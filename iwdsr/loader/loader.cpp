@@ -2,8 +2,8 @@
 #include <iostream>
 
 
-void Loader::loadElf(ELF& elfFile, Process& process) {
-    std::vector<ProgramHeader*> loadableProgHeader = elfFile.getProgramHeadersByPType(P_TYPE::PT_LOAD);
+void Loader::loadElf(ELF_PARSER::ELF& elfFile, Process& process) {
+    std::vector<ELF_PARSER::ProgramHeader*> loadableProgHeader = elfFile.getProgramHeadersByPType(ELF_PARSER::P_TYPE::PT_LOAD);
     ProcessMemory* procMem = process.getMemory();
     for ( auto lProgHeader : loadableProgHeader ) {
         int8_t* rawProgramPart = elfFile.rawRead(lProgHeader->p_offset, lProgHeader->p_memsz);
