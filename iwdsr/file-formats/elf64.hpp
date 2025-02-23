@@ -355,6 +355,9 @@ class ELF {
   int8_t* fetchRawSymbolByName( std::string symbolName);
   std::vector<Rel*> getRels();
   std::vector<Rela*> getRelas();
+
+  uint64_t getGOTSize();
+
 };
 
 }

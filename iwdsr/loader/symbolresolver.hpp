@@ -7,34 +7,31 @@
 
 namespace SR {
 
-class Symbol {
+class DLL {
     private:
-    bool isResolved;
-
-    std::string name;
-    int8_t* rawSymbol;
-    std::unordered_map< std::string, Symbol* > dependendSymbols;
-    std::unordered_map< uint64_t, std::string > relocations; // <offsetInSymbol | symbol name>
-
+    uint64_t gotTableOffset;
+    
     public:
-    Symbol( std::string name, int8_t* rawSymbol, std::unordered_map<std::string, SR::Symbol*> dependendSymbols);
-
-    std::string getName();
-    int8_t* getRaw();
-
-    void resolve();
-
 };
 
-class SymbolResolver { 
-private:
-    std::unordered_map<std::string, Symbol*> rootSymbols;
-    std::unordered_map<std::string, Symbol*> searchSymbolDependencies(ELF_PARSER::ELF& searchingFrom, ELF_PARSER::Symbol& symbol);
+class Symbol {
+    private:
 
-public:
-    SymbolResolver( ELF_PARSER::ELF& rootElf );
-    void fetchSymbolsFromElf( ELF_PARSER::ELF& dll);
-    
+    public:
+};
+
+class Relocation {
+    private:
+    std::string dllnameGot;
+};
+
+class SymbolResolver {
+    private:
+    std::unordered_map<std::string, SR::Symbol*> accountingSymbols;
+    public:
+    void registerDll(ELF_PARSER::ELF& dynamicLib);
+    void registerSymbol( ELF_PARSER::Symbol& elfSymbol);
+
 };
 
 }; //SR
