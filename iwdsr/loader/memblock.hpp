@@ -4,7 +4,8 @@
 #include <string>
 
 class MemBlock {
-    
+    public:
+    uint64_t getStartAddr(); 
 };
 
 class MemoryMap{
