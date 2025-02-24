@@ -357,6 +357,7 @@ class ELF {
   std::vector<Rela*> getRelas();
 
   uint64_t getGOTSize();
+  uint64_t getMemImageSize();
 
 };
 

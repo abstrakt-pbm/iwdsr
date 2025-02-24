@@ -9,9 +9,11 @@ namespace SR {
 
 class DLL {
     private:
-    uint64_t gotTableOffset;
+    uint64_t startVaddr;
+    ELF_PARSER::ELF* dllElf;
     
     public:
+    DLL(ELF_PARSER::ELF* dllElf);
 };
 
 class Symbol {
