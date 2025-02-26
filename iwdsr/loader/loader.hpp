@@ -10,10 +10,10 @@ class Loader {
     Process* proc; 
     MemoryMap memMap;
     SR::SymbolResolver symbolResolver;
-    void loadSectionsInMemBlk(ELF_PARSER::ELF& elf, MemBlock* blk);
+    void loadSectionsInMemBlk(ELF_PARSER::ELF* elf, MemBlock* blk);
 
     public:
     Loader(Process* proc);
-    void loadElf(ELF_PARSER::ELF& elfFile);
-    void loadDLL(std::string libName, ELF_PARSER::ELF& dynamicLib);
+    void loadElf(ELF_PARSER::ELF* elfFile);
+    void loadDLL(std::string libName, ELF_PARSER::ELF* dynamicLib);
 };

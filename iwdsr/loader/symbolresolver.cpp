@@ -10,7 +10,6 @@ void SR::SymbolResolver::resolveSymbols( std::string imageName ) {
     ELF_PARSER::ELF* targetImgElf = image->getOriginElf();
 
     for ( auto libName : targetImgElf->getLibDependencies() ) {
-        //тянем символы из библиотек от которых мы зависим и модифицируем GOT   
         if ( memMap->isImageExists( libName )) {
             auto libImg = memMap->getImage( libName );
             if ( libImg == nullptr) {
