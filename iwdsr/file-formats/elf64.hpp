@@ -351,13 +351,16 @@ class ELF {
   int8_t* rawRead( uint64_t offset, uint64_t byteCount);
   std::vector<std::string> getLibDependencies();
   std::unordered_map<std::string, Symbol*> getSymbols(); 
+  std::vector<std::string> getSymbolNames();
   Symbol* getSymbolById(uint16_t id);
   int8_t* fetchRawSymbolByName( std::string symbolName);
+
   std::vector<Rel*> getRels();
   std::vector<Rela*> getRelas();
 
   uint64_t getGOTSize();
   uint64_t getMemImageSize();
+  uint16_t getSymbolIdInGotByDynSymbolName();
 
 };
 
