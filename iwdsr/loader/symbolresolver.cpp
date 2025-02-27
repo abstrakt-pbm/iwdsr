@@ -1,7 +1,7 @@
 #include "symbolresolver.hpp"
 
 void SR::SymbolResolver::resolveSymbols( std::string imageName ) {
-    NamedImage* image = memMap->getImage( imageName );
+    ElfMemoryImage* image = memMap->getImage( imageName );
     if ( image == nullptr ) {
         return;
     }

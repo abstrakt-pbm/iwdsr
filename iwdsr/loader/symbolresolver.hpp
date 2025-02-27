@@ -9,7 +9,6 @@
 
 namespace SR {
 
-
 class SymbolResolver {
     private:
     ProcessMemory* procMem;
@@ -20,7 +19,6 @@ class SymbolResolver {
     SymbolResolver() = default;
     SymbolResolver( ProcessMemory* procMem, MemoryMap* memMap );
     void resolveSymbols( std::string imageName ); // Загружаем библиотеки в MemMap и пытаемся отрезольвить всё что можем 
-    bool isImageNeedToBeResolved( std::string imageName );
 };
 
 }; //SR

@@ -12,7 +12,7 @@ void Loader::loadElf(ELF_PARSER::ELF* elfFile) {
         loadSectionsInMemBlk( elfFile, elfMemBlk ); 
     }
 
-    memMap.makeNamedMapping( "executable", elfMemBlk, elfFile );
+    memMap.makeElfMemoryImage( "executable", elfMemBlk, elfFile );
 
     for ( auto lib : elfFile->getLibDependencies() ) {
         loadDLL(lib, nullptr);
@@ -29,7 +29,7 @@ void Loader::loadDLL( std::string libName, ELF_PARSER::ELF* dynamicLib) {
         loadSectionsInMemBlk( dynamicLib, dllMemBlk );
     }
 
-    memMap.makeNamedMapping( libName, dllMemBlk, dynamicLib );
+    memMap.makeElfMemoryImage( libName, dllMemBlk, dynamicLib );
 
     for ( auto lib : dynamicLib->getLibDependencies() ) {
         loadDLL(lib, nullptr);
