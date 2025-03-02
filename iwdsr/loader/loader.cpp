@@ -5,15 +5,19 @@
 Loader::Loader(Process* proc) {
     this->proc = proc;
     this->symbolResolver = SR::SymbolResolver(proc->getMemory(), &memMap); 
+    memMap.setMinimalAddress(0x10000);
+    memMap.setMaximumAddress(0x00007FFFFFFFFFFF);
 }
 
 void Loader::loadElf(ELF_PARSER::ELF* elfFile) {
     MemBlock* elfMemBlk = memMap.allocate( 0x10000, elfFile->getMemImageSize());
-    if ( elfMemBlk != nullptr) {
-        loadElfInMemBlk( elfFile, elfMemBlk ); 
-    } else {
+
+    if ( elfMemBlk == nullptr) {
         std::cout << "Failed to get memory block for executable" << std::endl;
+        return;
     }
+
+    loadElfInMemBlk( elfFile, elfMemBlk ); 
 
     memMap.makeElfMemoryImage( BASE_ELF_MEMORY_IMAGE, elfMemBlk, elfFile );
     for ( auto lib : elfFile->getLibDependencies() ) {

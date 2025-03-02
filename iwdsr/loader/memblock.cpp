@@ -97,6 +97,14 @@ std::vector<ElfMemoryImage*> MemoryMap::getImages() {
     return imgs;
 }
 
+void MemoryMap::setMinimalAddress(uint64_t addr) {
+    this->minimalAddr = addr;
+}
+
+void MemoryMap::setMaximumAddress(uint64_t addr) {
+    this->maximumAddr = addr;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ElfMemoryImage::ElfMemoryImage( std::string imageName, ELF_PARSER::ELF* originElf, MemBlock* blk ) {

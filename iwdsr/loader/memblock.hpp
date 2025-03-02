@@ -74,5 +74,8 @@ class MemoryMap{
     MemBlock* getFreeBlock(uint64_t size);
     MemBlock* allocate(uint64_t baseAddr, uint64_t lenght);
     void unalloc( MemBlock* blk);
+
+    void setMinimalAddress(uint64_t addr);
+    void setMaximumAddress(uint64_t addr);
     
 };
