@@ -38,6 +38,7 @@ void SR::SymbolResolver::makeRelocation( ELF_PARSER::Rela* rela, ElfMemoryImage*
             uint16_t dynSymbId = rela->getSymbolId();
             ELF_PARSER::Symbol* dynSymb = img->getOriginElf()->getDynSymbolById(dynSymbId);
             ElfMemoryImage* libImg = findImgWithSymbol( dynSymb->getName());
+            
             if ( libImg == nullptr) {
                 std::cout << std::format("Symbol not found in any memory images: {}", dynSymb->getName()) << std::endl;
                 return;

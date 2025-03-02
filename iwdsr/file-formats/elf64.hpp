@@ -202,7 +202,7 @@ class Symbol {
 
   std::string getName();
   bool addrInSymbol(uint64_t addr);
-  uint16_t getId();
+  uint16_t getSectionId();
   uint64_t getBaseAddr();
   uint64_t getSize();
 };

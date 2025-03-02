@@ -417,7 +417,7 @@ std::vector<Rela*> ELF::getRelas() {
 Symbol* ELF::getSymbolById(uint16_t id) {
     Symbol* res = nullptr;
     for ( auto symb : symbols ) {
-        if ( symb.second->getId() == id) {
+        if ( symb.second->getSectionId() == id) {
             res = symb.second;
         }
     } 
@@ -440,10 +440,7 @@ Symbol* ELF::getSymbolByName( std::string symbName ) {
 Symbol* ELF::getDynSymbolById( uint16_t id ) {
     Symbol* result = nullptr;
     for ( auto dynSymb : dynSymbols ) {
-        if (dynSymb.second->getId() == id){
-            result = dynSymb.second;
-            break;
-        } 
+        //ищем символ по его id 
     }
     return result;
 }
@@ -502,7 +499,7 @@ bool Symbol::addrInSymbol( uint64_t addr ) {
     return addr >= st_value && addr < (st_value + st_size + 1);
 }
 
-uint16_t Symbol::getId() {
+uint16_t Symbol::getSectionId() {
     return this->st_shndx;
 }
 
