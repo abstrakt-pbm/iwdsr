@@ -341,6 +341,8 @@ class ELF {
 
   uint64_t getGOTbaseAddr();
 
+  bool isSectionExistsByName( std::string sectionName);
+
   public:
   ELF(std::filesystem::path pathToELF);
   ~ELF();

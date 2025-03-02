@@ -49,6 +49,7 @@ void SR::SymbolResolver::makeRelocation( ELF_PARSER::Rela* rela, ElfMemoryImage*
                 (int8_t*)( &symbAddr ),
                 8
             );
+            std::cout << std::format("Resolved Symbol: {}", dynSymb->getName()) << std::endl;
             break;
         }
 

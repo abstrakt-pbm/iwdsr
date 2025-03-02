@@ -22,7 +22,7 @@ void Loader::loadElf(ELF_PARSER::ELF* elfFile) {
 
     memMap.makeElfMemoryImage( BASE_ELF_MEMORY_IMAGE, elfMemBlk, elfFile );
     for ( auto lib : elfFile->getLibDependencies() ) {
-        loadDLL(lib, nullptr);
+        loadDLL(lib, libPool[lib]);
     }
 
     symbolResolver.resolveImage( BASE_ELF_MEMORY_IMAGE );
@@ -45,7 +45,7 @@ void Loader::loadDLL( std::string libName, ELF_PARSER::ELF* dynamicLib) {
     loadElfInMemBlk( dynamicLib, dllMemBlk );
     memMap.makeElfMemoryImage( libName, dllMemBlk, dynamicLib );
     for ( auto lib : dynamicLib->getLibDependencies() ) {
-        loadDLL(lib, nullptr);
+        loadDLL(lib, libPool[lib]);
     }
 
     symbolResolver.resolveImage( libName );

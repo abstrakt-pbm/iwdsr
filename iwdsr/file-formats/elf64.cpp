@@ -29,8 +29,9 @@ ELF::ELF(std::filesystem::path pathToELF) {
     for ( auto i = 0 ; i < sectionHeaders.size() ; i++ ) {
         sections[shstrTab[sectionHeaders[i]->sh_name]] = new Section(shstrTab[sectionHeaders[i]->sh_name], sectionHeaders[i]);
     }
-    
-    symbols = parseSymbolTable();
+    if (isSectionExistsByName(".symtab")){
+        symbols = parseSymbolTable();
+    }
     relHeaders = parseRelTables();
     relaHeaders = parseRelaTables();
     gotPointers = parseGotTable();
@@ -467,6 +468,9 @@ bool ELF::containSymbolByName( std::string symbName ) {
     return symbols.contains(symbName);
 }
 
+bool ELF::isSectionExistsByName( std::string sectionName ) {
+    return sections.contains(sectionName);
+}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Section::Section(std::string title, SectionHeader *segHdr) {
