@@ -56,7 +56,10 @@ MemBlock* MemoryMap::allocate(uint64_t baseAddr, uint64_t lenght) {
             targetBlk
     );
 
-    leftFromBlk->setRightBlk(allocatedBlk);
+    if ( leftFromBlk != nullptr ) {
+        leftFromBlk->setRightBlk(allocatedBlk);
+    }
+
     targetBlk->setLeftBlk(allocatedBlk);
     targetBlk->setStartAddr(baseAddr + lenght - 1);
     targetBlk->setLenght(targetBlk->getLenght() - lenght);
@@ -79,7 +82,7 @@ MemBlock* MemoryMap::getFreeBlock( uint64_t size ) {
 MemBlock* MemoryMap::getBlkContainingAddr( uint64_t addr ) {
     MemBlock* currentBlk = rootBlk;
     while( currentBlk != nullptr ) {
-        if ( addr > currentBlk->getStartAddr() && addr < currentBlk->getFinishAddr() ) {
+        if ( addr >= currentBlk->getStartAddr() && addr < currentBlk->getFinishAddr() ) {
             break;
         }
         currentBlk = currentBlk->getRightBlk();
@@ -103,6 +106,14 @@ void MemoryMap::setMinimalAddress(uint64_t addr) {
 
 void MemoryMap::setMaximumAddress(uint64_t addr) {
     this->maximumAddr = addr;
+}
+
+void MemoryMap::createNewRootBlk() {
+    this->rootBlk = new MemBlock(
+        minimalAddr, 
+        maximumAddr - minimalAddr,
+        MemBlkState::FREE
+    );
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -7,6 +7,7 @@ Loader::Loader(Process* proc) {
     this->symbolResolver = SR::SymbolResolver(proc->getMemory(), &memMap); 
     memMap.setMinimalAddress(0x10000);
     memMap.setMaximumAddress(0x00007FFFFFFFFFFF);
+    memMap.createNewRootBlk();
 }
 
 void Loader::loadElf(ELF_PARSER::ELF* elfFile) {
@@ -63,4 +64,23 @@ void Loader::loadElfInMemBlk(ELF_PARSER::ELF* elf, MemBlock* blk) {
             loadableSection->p_memsz
         );
     }
+}
+
+bool Loader::fillLibPool( std::filesystem::path pathToLibDir ) {
+    if ( !std::filesystem::exists(pathToLibDir) ){
+        std::cout << std::format("Path to lib not exists: {}", pathToLibDir.string()) << std::endl;
+        return false;
+    }
+    if (  !std::filesystem::is_directory(pathToLibDir) ) {
+        std::cout << std::format("Is not a directory: {}", pathToLibDir.string()) << std::endl;
+        return false;
+    }
+
+    for ( const auto& file : std::filesystem::directory_iterator(pathToLibDir)) {
+        if ( std::filesystem::is_regular_file(file.path()) ){
+            std::cout << std::format( "Found lib: {}", file.path().filename().string()) << std::endl;
+            this->libPool[file.path().filename().string()] = new ELF_PARSER::ELF(file);
+        }
+    }
+    return true;
 }

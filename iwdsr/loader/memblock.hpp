@@ -77,5 +77,6 @@ class MemoryMap{
 
     void setMinimalAddress(uint64_t addr);
     void setMaximumAddress(uint64_t addr);
+    void createNewRootBlk();
     
 };
