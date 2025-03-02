@@ -33,7 +33,7 @@ MemBlock* MemoryMap::allocate(uint64_t baseAddr, uint64_t lenght) {
         std::cout << std::format("Allocation error | Address already allocated: {:X}", baseAddr) << std::endl; 
         return nullptr;
     }
-    // урезать свободный блок вправо и переставить указатели
+
     MemBlock* allocatedBlk = nullptr;
     MemBlock* leftFromBlk = nullptr;
     if ( baseAddr > targetBlk->getStartAddr() && baseAddr < targetBlk->getFinishAddr()) {
@@ -86,6 +86,17 @@ MemBlock* MemoryMap::getBlkContainingAddr( uint64_t addr ) {
     }
     return currentBlk;
 }
+
+std::vector<ElfMemoryImage*> MemoryMap::getImages() {
+    std::vector<ElfMemoryImage*> imgs(images.size());
+    int i = 0;
+    for ( auto img : images ) {
+        imgs[i] = img.second;
+        i++;
+    }
+    return imgs;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ElfMemoryImage::ElfMemoryImage( std::string imageName, ELF_PARSER::ELF* originElf, MemBlock* blk ) {
@@ -98,6 +109,10 @@ ELF_PARSER::ELF* ElfMemoryImage::getOriginElf() {
     return this->originElf;
 }
 
+uint64_t ElfMemoryImage::getBaseAddr() {
+    return this->blk->getStartAddr();
+}
+
 uint64_t ElfMemoryImage::getSymbolAddressByName( std::string symbolName) {
     uint64_t addr = 0;
     if ( originElf->containSymbolByName( symbolName ) ){
@@ -108,7 +123,6 @@ uint64_t ElfMemoryImage::getSymbolAddressByName( std::string symbolName) {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 MemBlock::MemBlock( uint64_t startAddr, uint64_t lenght, MemBlkState state, MemBlock* lBlk, MemBlock* rBlk ) {
     this->state = state;
@@ -138,11 +152,23 @@ MemBlkState MemBlock::getState() {
     return this->state;
 }
 
+uint64_t MemBlock::getFinishAddr() {
+    return this->startAddr + lenght;
+}
+
 void MemBlock::setLeftBlk( MemBlock* blk) {
     this->leftBlk = blk;
 }
 
 void MemBlock::setRightBlk( MemBlock* blk ) {
     this->rightBlk = blk;
+}
+
+void MemBlock::setLenght( uint64_t lenght ) {
+    this->lenght = lenght;
+}
+
+void MemBlock::setStartAddr( uint64_t startAddr ) {
+    this->startAddr = startAddr;
 }
 

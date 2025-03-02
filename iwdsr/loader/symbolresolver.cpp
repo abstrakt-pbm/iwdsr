@@ -2,6 +2,11 @@
 #include <iostream>
 #include <format>
 
+SR::SymbolResolver::SymbolResolver( ProcessMemory* procMem, MemoryMap* memMap ) {
+    this->procMem = procMem;
+    this->memMap = memMap;
+}
+
 void SR::SymbolResolver::resolveImage( std::string imageName ) {
     ElfMemoryImage* image = memMap->getImage( imageName );
     if ( image == nullptr ) {

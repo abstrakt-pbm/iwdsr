@@ -2,6 +2,8 @@
 #include <iostream>
 #include <string>
 #include <span>
+#include <limits>
+#include <algorithm>
 
 using namespace ELF_PARSER;
 
@@ -443,6 +445,22 @@ Symbol* ELF::getDynSymbolById( uint16_t id ) {
         } 
     }
     return result;
+}
+
+uint64_t ELF::getMemImageSize() {
+    uint64_t minimalAddr = std::numeric_limits<uint64_t>::max();
+    uint64_t maximumAddr = 0;
+    std::vector<ProgramHeader*> loadableProgHeaders = getProgramHeadersByPType(P_TYPE::PT_LOAD);
+    
+    if ( loadableProgHeaders.size() == 0 ) {
+        return 0;
+    }
+
+    for ( auto progHeader : loadableProgHeaders ) {
+        minimalAddr = std::min(minimalAddr, progHeader->p_vaddr);
+        maximumAddr = std::max(maximumAddr, progHeader->p_vaddr + progHeader->p_memsz);
+    }
+    return maximumAddr - minimalAddr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
