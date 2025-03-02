@@ -1,5 +1,6 @@
 #include "loader.hpp"
 #include <iostream>
+#include <format>
 
 Loader::Loader(Process* proc) {
     this->proc = proc;
@@ -9,35 +10,43 @@ Loader::Loader(Process* proc) {
 void Loader::loadElf(ELF_PARSER::ELF* elfFile) {
     MemBlock* elfMemBlk = memMap.allocate( 0x10000, elfFile->getMemImageSize());
     if ( elfMemBlk != nullptr) {
-        loadSectionsInMemBlk( elfFile, elfMemBlk ); 
+        loadElfInMemBlk( elfFile, elfMemBlk ); 
+    } else {
+        std::cout << "Failed to get memory block for executable" << std::endl;
     }
 
-    memMap.makeElfMemoryImage( "executable", elfMemBlk, elfFile );
-
+    memMap.makeElfMemoryImage( BASE_ELF_MEMORY_IMAGE, elfMemBlk, elfFile );
     for ( auto lib : elfFile->getLibDependencies() ) {
         loadDLL(lib, nullptr);
     }
 
-    symbolResolver.resolveSymbols("executable");
-
+    symbolResolver.resolveImage( BASE_ELF_MEMORY_IMAGE );
 }
 
 void Loader::loadDLL( std::string libName, ELF_PARSER::ELF* dynamicLib) {
-    MemBlock* dllMemBlk = memMap.getFreeBlock(dynamicLib->getMemImageSize());
-    ProcessMemory* procMem = proc->getMemory();
-    if ( dllMemBlk != nullptr ) {
-        loadSectionsInMemBlk( dynamicLib, dllMemBlk );
+    if ( dynamicLib == nullptr) {
+        std::cout << std::format("DLL not found: {}", libName) << std::endl;
+        return;
     }
 
-    memMap.makeElfMemoryImage( libName, dllMemBlk, dynamicLib );
+    MemBlock* dllMemBlk = memMap.getFreeBlock(dynamicLib->getMemImageSize());
+    ProcessMemory* procMem = proc->getMemory();
 
+    if ( dllMemBlk == nullptr ) {
+        std::cout << std::format("Failed to get memory block for: {}", libName) << std::endl;
+        return;
+    }
+
+    loadElfInMemBlk( dynamicLib, dllMemBlk );
+    memMap.makeElfMemoryImage( libName, dllMemBlk, dynamicLib );
     for ( auto lib : dynamicLib->getLibDependencies() ) {
         loadDLL(lib, nullptr);
     }
-    symbolResolver.resolveSymbols( libName );
+
+    symbolResolver.resolveImage( libName );
 }
 
-void Loader::loadSectionsInMemBlk(ELF_PARSER::ELF* elf, MemBlock* blk) {
+void Loader::loadElfInMemBlk(ELF_PARSER::ELF* elf, MemBlock* blk) {
     ProcessMemory* procMem = proc->getMemory();
     for ( auto loadableSection : elf->getProgramHeadersByPType(ELF_PARSER::P_TYPE::PT_LOAD)) {
         int8_t* rawSection = elf->rawRead(

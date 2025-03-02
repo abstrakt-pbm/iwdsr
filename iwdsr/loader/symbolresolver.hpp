@@ -15,10 +15,13 @@ class SymbolResolver {
     MemoryMap* memMap;
     std::unordered_map<std::string, bool> resolveState; //<libname | state>
 
+    ElfMemoryImage* findImgWithSymbol( std::string symbolName);
+
     public:
     SymbolResolver() = default;
     SymbolResolver( ProcessMemory* procMem, MemoryMap* memMap );
-    void resolveSymbols( std::string imageName ); // Загружаем библиотеки в MemMap и пытаемся отрезольвить всё что можем 
+    void resolveImage( std::string imageName ); // Загружаем библиотеки в MemMap и пытаемся отрезольвить всё что можем 
+    void makeRelocation( ELF_PARSER::Rela*, ElfMemoryImage* );
 };
 
 }; //SR

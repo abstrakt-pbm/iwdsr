@@ -429,6 +429,22 @@ int8_t* ELF::fetchRawSymbolByName( std::string symbolName) {
     elfFile->read(rawSymbol, symb->getSize());
     return (int8_t*)rawSymbol;
 }
+
+Symbol* ELF::getSymbolByName( std::string symbName ) {
+    return symbols[ symbName ];
+}
+
+Symbol* ELF::getDynSymbolById( uint16_t id ) {
+    Symbol* result = nullptr;
+    for ( auto dynSymb : dynSymbols ) {
+        if (dynSymb.second->getId() == id){
+            result = dynSymb.second;
+            break;
+        } 
+    }
+    return result;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Section::Section(std::string title, SectionHeader *segHdr) {
@@ -478,8 +494,6 @@ uint64_t Rel::getSymbolId(){
     return r_info >> 32;
 }
 
-
 RelocationType Rel::getRelocationType() {
     return static_cast<RelocationType>(r_info & 0xFFFFFFFF );
 }
-

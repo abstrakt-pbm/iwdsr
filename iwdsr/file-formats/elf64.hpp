@@ -7,7 +7,6 @@
 
 namespace ELF_PARSER {
 
-
 enum EI_CLASS : char {
   ELFCLASSNONE,
   ELFCLASS32,
@@ -340,6 +339,8 @@ class ELF {
   std::vector<std::string> parseLibDependedcise();
   std::unordered_map<uint64_t, std::string> separateASCIIZeroes(char* rawWords, uint64_t charsCount);
 
+  uint64_t getGOTbaseAddr();
+
   public:
   ELF(std::filesystem::path pathToELF);
   ~ELF();
@@ -352,7 +353,10 @@ class ELF {
   std::vector<std::string> getLibDependencies();
   std::unordered_map<std::string, Symbol*> getSymbols(); 
   std::vector<std::string> getSymbolNames();
-  Symbol* getSymbolById(uint16_t id);
+  Symbol* getSymbolById( uint16_t id );
+  Symbol* getSymbolByName( std::string );
+  bool containSymbolByName( std::string );
+  Symbol* getDynSymbolById( uint16_t id );
   int8_t* fetchRawSymbolByName( std::string symbolName);
 
   std::vector<Rel*> getRels();
@@ -360,8 +364,6 @@ class ELF {
 
   uint64_t getGOTSize();
   uint64_t getMemImageSize();
-  uint16_t getSymbolIdInGotByDynSymbolName();
-
 };
 
 }
