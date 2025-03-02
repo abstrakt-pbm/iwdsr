@@ -67,16 +67,17 @@ void Loader::loadElfInMemBlk(ELF_PARSER::ELF* elf, MemBlock* blk) {
 }
 
 bool Loader::fillLibPool( std::filesystem::path pathToLibDir ) {
-    if ( !std::filesystem::exists(pathToLibDir) ){
-        std::cout << std::format("Path to lib not exists: {}", pathToLibDir.string()) << std::endl;
+    std::filesystem::path absPath = std::filesystem::current_path() / pathToLibDir;
+    if ( !std::filesystem::exists(absPath) ){
+        std::cout << std::format("Path to lib not exists: {}", absPath.string()) << std::endl;
         return false;
     }
-    if (  !std::filesystem::is_directory(pathToLibDir) ) {
-        std::cout << std::format("Is not a directory: {}", pathToLibDir.string()) << std::endl;
+    if (  !std::filesystem::is_directory(absPath) ) {
+        std::cout << std::format("Is not a directory: {}", absPath.string()) << std::endl;
         return false;
     }
 
-    for ( const auto& file : std::filesystem::directory_iterator(pathToLibDir)) {
+    for ( const auto& file : std::filesystem::directory_iterator(absPath)) {
         if ( std::filesystem::is_regular_file(file.path()) ){
             std::cout << std::format( "Found lib: {}", file.path().filename().string()) << std::endl;
             this->libPool[file.path().filename().string()] = new ELF_PARSER::ELF(file);
