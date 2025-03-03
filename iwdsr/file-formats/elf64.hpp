@@ -189,7 +189,7 @@ class Rela : public Rel {
 };
 
 class Symbol {
-  private:
+  protected:
   std::string name;
   uint8_t st_info;
   uint8_t st_other;
@@ -198,6 +198,7 @@ class Symbol {
   uint64_t st_size;
 
   public:
+  Symbol() = default;
   Symbol(std::string name, uint8_t st_info, uint8_t st_other, uint16_t st_shndx, uint64_t st_value, uint64_t st_size);
 
   std::string getName();
@@ -205,6 +206,14 @@ class Symbol {
   uint16_t getSectionId();
   uint64_t getBaseAddr();
   uint64_t getSize();
+};
+
+class DynamicSymbol : public Symbol {
+  protected:
+  uint16_t id; 
+  public:
+  DynamicSymbol(std::string name, uint8_t st_info, uint8_t st_other, uint16_t st_shndx, uint64_t st_value, uint64_t st_size, uint64_t id);
+  uint16_t getId();
 };
 
 enum DT_TAG {
@@ -320,12 +329,12 @@ class ELF {
 
   std::unordered_map<std::string, Section*> sections;
   std::unordered_map<std::string, Symbol*> symbols;
-  std::unordered_map<std::string, Symbol*> dynSymbols;
+  std::unordered_map<std::string, DynamicSymbol*> dynSymbols;
 
   std::vector<ProgramHeader*> parseProgramHeaders();
   std::vector<SectionHeader*> parseSectionHeaders();
   std::unordered_map<std::string, Symbol*> parseSymbolTable();
-  std::unordered_map<std::string, Symbol*> parseDynSymbolTable();
+  std::unordered_map<std::string, DynamicSymbol*> parseDynSymbolTable();
   std::unordered_map<uint64_t, std::string> parseShStrTable();
   std::unordered_map<uint64_t, std::string> parseStrTable();
   std::unordered_map<uint64_t, std::string> parseDynStrTable();

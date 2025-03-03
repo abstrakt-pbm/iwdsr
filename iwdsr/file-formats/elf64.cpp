@@ -270,8 +270,8 @@ std::unordered_map<std::string, Symbol*> ELF::parseSymbolTable() {
     return symbols;
 }
 
-std::unordered_map<std::string, Symbol*> ELF::parseDynSymbolTable() {
-    std::unordered_map<std::string, Symbol*> dynSymbols;
+std::unordered_map<std::string, DynamicSymbol*> ELF::parseDynSymbolTable() {
+    std::unordered_map<std::string, DynamicSymbol*> dynSymbols;
     Section* dynSymbolSection = getSectionByName(".dynsym");
     SectionHeader* dynSymSecHeader = dynSymbolSection->getHeader();
     dynStrs = parseDynStrTable();
@@ -289,7 +289,7 @@ std::unordered_map<std::string, Symbol*> ELF::parseDynSymbolTable() {
         uint64_t st_value = *(uint64_t*)(rawDynSymTab + i * dynSymSecHeader->sh_entsize + 8);
         uint64_t st_size = *(uint64_t*)(rawDynSymTab + i * dynSymSecHeader->sh_entsize + 16);
 
-        dynSymbols[dynStrs[st_name]] = new Symbol(dynStrs[st_name], st_info, st_other, st_shndx, st_value, st_size);
+        dynSymbols[dynStrs[st_name]] = new DynamicSymbol(dynStrs[st_name], st_info, st_other, st_shndx, st_value, st_size, i);
     }
 
     return dynSymbols;
@@ -440,7 +440,10 @@ Symbol* ELF::getSymbolByName( std::string symbName ) {
 Symbol* ELF::getDynSymbolById( uint16_t id ) {
     Symbol* result = nullptr;
     for ( auto dynSymb : dynSymbols ) {
-        //ищем символ по его id 
+        if (dynSymb.second->getId() == id) {
+            result = dynSymb.second;
+            break;
+        }
     }
     return result;
 }
@@ -489,7 +492,15 @@ Symbol::Symbol(std::string name, uint8_t st_info, uint8_t st_other, uint16_t st_
     this->st_value = st_value;
     this->st_size = st_size;
 }
-
+DynamicSymbol::DynamicSymbol(std::string name, uint8_t st_info, uint8_t st_other, uint16_t st_shndx, uint64_t st_value, uint64_t st_size, uint64_t id) {
+    this->name = name;
+    this->st_info = st_info;
+    this->st_other = st_other;
+    this->st_shndx = st_shndx;
+    this->st_value = st_value;
+    this->st_size = st_size;
+    this->id = id;
+}
 std::string Symbol::getName() {
 
     return this->name;
@@ -509,6 +520,11 @@ uint64_t Symbol::getBaseAddr() {
 
 uint64_t Symbol::getSize() {
     return this->st_size;
+}
+
+
+uint16_t DynamicSymbol::getId() {
+    return this->id;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
