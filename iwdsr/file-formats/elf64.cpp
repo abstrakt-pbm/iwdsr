@@ -225,9 +225,19 @@ std::unordered_map<uint64_t, std::string> ELF::separateASCIIZeroes(char* rawWord
         return wordsMap;
     }
 
-    bool consumingWord = false;
+    bool consumingWord = true;
     int prev = 0;
-    auto i = 0;
+
+    for ( auto i = 0 ; i < charsCount ; i++ ) {
+        if (rawWords[i] == 0) {
+            std::span<char> rawWord(rawWords + prev, i - prev);
+            wordsMap[prev] = std::string(rawWord.begin(), rawWord.end());
+
+            prev = i+1;
+        }
+    } 
+
+    /*
     while ( i < charsCount){
         if ( consumingWord == false && rawWords[i] == 0x00) {
             consumingWord = true;
@@ -241,6 +251,7 @@ std::unordered_map<uint64_t, std::string> ELF::separateASCIIZeroes(char* rawWord
             i++;
         }
     }
+    */
     return wordsMap;
 }
 
@@ -288,8 +299,9 @@ std::unordered_map<std::string, DynamicSymbol*> ELF::parseDynSymbolTable() {
         uint16_t st_shndx = *(uint16_t*)(rawDynSymTab + i * dynSymSecHeader->sh_entsize + 6);
         uint64_t st_value = *(uint64_t*)(rawDynSymTab + i * dynSymSecHeader->sh_entsize + 8);
         uint64_t st_size = *(uint64_t*)(rawDynSymTab + i * dynSymSecHeader->sh_entsize + 16);
-
-        dynSymbols[dynStrs[st_name]] = new DynamicSymbol(dynStrs[st_name], st_info, st_other, st_shndx, st_value, st_size, i);
+        DynamicSymbol* dynSymb = new DynamicSymbol(dynStrs[st_name], st_info, st_other, st_shndx, st_value, st_size, i);
+        dynamicSymbolWithId[i] = dynSymb;
+        dynSymbols[dynStrs[st_name]] = dynSymb ;
     }
 
     return dynSymbols;
@@ -422,15 +434,10 @@ Symbol* ELF::getSymbolByName( std::string symbName ) {
 
 
 DynamicSymbol* ELF::getDynSymbolById( uint16_t id ) {
-    DynamicSymbol* result = nullptr;
-    for ( auto dynSymb : dynSymbols ) {
-        if (dynSymb.second->getId() == id) {
-            result = dynSymb.second;
-            break;
-        }
-    }
-
-    return result;
+    if ( dynamicSymbolWithId.contains(id) ){
+        return dynamicSymbolWithId[id];
+    } 
+    return nullptr;
 }
 
 DynamicSymbol* ELF::getDynSymbolByName( std::string dynamicSymbolName ) {
@@ -523,5 +530,5 @@ uint64_t Rel::getSymbolId(){
 }
 
 RelocationType Rel::getRelocationType() {
-    return static_cast<RelocationType>(r_info & 0xFFFFFFFF );
+    return static_cast<RelocationType>(r_info & 0xFFFFFFFFL );
 }

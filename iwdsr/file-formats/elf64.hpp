@@ -344,6 +344,7 @@ class ELF {
   std::unordered_map<std::string, Section*> sections;
   std::unordered_map<std::string, Symbol*> symbols;
   std::unordered_map<std::string, DynamicSymbol*> dynSymbols;
+  std::unordered_map<uint64_t, DynamicSymbol*> dynamicSymbolWithId;
 
   std::vector<ProgramHeader*> parseProgramHeaders();
   std::vector<SectionHeader*> parseSectionHeaders();
@@ -387,7 +388,6 @@ class ELF {
   std::vector<Rel*> getRels();
   std::vector<Rela*> getRelas();
 
-  uint64_t getGOTSize();
   uint64_t getMemImageSize();
 };
 

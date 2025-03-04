@@ -20,7 +20,7 @@ class SymbolResolver {
     public:
     SymbolResolver() = default;
     SymbolResolver( ProcessMemory* procMem, MemoryMap* memMap );
-    void resolveImage( std::string imageName ); // Загружаем библиотеки в MemMap и пытаемся отрезольвить всё что можем 
+    void resolveImage( std::string imageName ); 
     void makeRelocation( ELF_PARSER::Rela*, ElfMemoryImage* );
 };
 

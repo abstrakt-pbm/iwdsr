@@ -4,7 +4,6 @@
 
 void MemoryMap::makeElfMemoryImage( std::string name, MemBlock* blk, ELF_PARSER::ELF* originElf) {
     if ( !images.contains( name ) ) {
-        std::cout << std::format( "Making image for: {}", name ) << std::endl;
         images[name] = new ElfMemoryImage( name, originElf, blk );
     }
 }

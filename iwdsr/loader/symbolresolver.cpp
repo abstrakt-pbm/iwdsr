@@ -33,6 +33,7 @@ void SR::SymbolResolver::resolveImage( std::string imageName ) {
 void SR::SymbolResolver::makeRelocation( ELF_PARSER::Rela* rela, ElfMemoryImage* img) {
     ELF_PARSER::RelocationType reloType = rela->getRelocationType();
     switch ( reloType ) {
+        case ELF_PARSER::R_X86_64_GLOB_DAT:
         case ELF_PARSER::R_X86_64_JUMP_SLOT: {
             uint64_t writeAddr = img->getBaseAddr() + rela->r_offset;
             uint16_t dynSymbId = rela->getSymbolId();
@@ -42,7 +43,7 @@ void SR::SymbolResolver::makeRelocation( ELF_PARSER::Rela* rela, ElfMemoryImage*
                 std::cout << std::format("Symbol not found in any memory images: {}", dynSymb->getName()) << std::endl;
                 return;
             }
-            std::cout << std::format("Start resolving: {}", dynSymb->getName()) << std::endl;
+
             uint64_t symbAddr = libImg->getSymbolAddressByName( dynSymb->getName() ); 
             procMem->writeMem( 
                 writeAddr,
@@ -52,12 +53,13 @@ void SR::SymbolResolver::makeRelocation( ELF_PARSER::Rela* rela, ElfMemoryImage*
             std::cout << std::format("Resolved Symbol: {}", dynSymb->getName()) << std::endl;
             break;
         }
-
+        
         default : {
-            std::cout << std::format( "Relocation is not implemented: {:x}", (int)reloType ) << std::endl;
+            std::cout << std::format( "Unimplemented relocation: {}", (int)reloType ) << std::endl;
         }
     }
 }
+
 
 ElfMemoryImage* SR::SymbolResolver::findImgWithSymbol( std::string symbolName) {
     auto imgs = memMap->getImages();
