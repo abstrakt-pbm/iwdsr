@@ -35,7 +35,6 @@ ELF::ELF(std::filesystem::path pathToELF) {
     }
     relHeaders = parseRelTables();
     relaHeaders = parseRelaTables();
-    gotPointers = parseGotTable();
     dynSymbols = parseDynSymbolTable();
     dynamicTable = parseDynamicTable();
     libDependencies = parseLibDependedcise();
@@ -343,24 +342,6 @@ std::vector<ELF_DYN*> ELF::getDynamicRecordsByDtTag(DT_TAG dtTag) {
         }
     }
     return dynRecs;
-}
-
-std::vector<uint64_t> ELF::parseGotTable() {
-    std::vector<uint64_t> funcPointers;
-    Section* gotSec = getSectionByName(".got");
-    SectionHeader* gotSecHeader = gotSec->getHeader();
-
-    char rawGotTable[gotSecHeader->sh_size];
-    elfFile->seekg(gotSecHeader->sh_offset, std::ios::beg);
-    elfFile->read(rawGotTable, gotSecHeader->sh_size);
-
-    uint64_t recordCount = gotSecHeader->sh_size / gotSecHeader->sh_entsize;
-    for ( auto i = 0 ; i < recordCount ; i++ ) {
-       uint64_t currentFuncPointer =  *(uint64_t*)(rawGotTable + i * gotSecHeader->sh_entsize);
-       funcPointers.push_back(currentFuncPointer);
-    }
-
-    return funcPointers;
 }
 
 Section* ELF::getSectionByName(std::string sectionName) {

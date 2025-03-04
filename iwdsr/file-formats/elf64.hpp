@@ -322,7 +322,6 @@ class ELF {
   std::vector<SectionHeader*> sectionHeaders;
   std::vector<Rel*> relHeaders;
   std::vector<Rela*> relaHeaders;
-  std::vector<uint64_t> gotPointers;
   
   std::unordered_map<uint64_t, std::string> dynStrs;
   std::unordered_map<uint64_t, std::string> shstrTab;
@@ -342,7 +341,6 @@ class ELF {
   std::vector<Rel*> parseRelTables();
   std::vector<Rela*> parseRelaTable(Section* secRelType);
   std::vector<Rela*> parseRelaTables();
-  std::vector<uint64_t> parseGotTable();
   ELF_Header parseELFHeader();
   std::vector<ELF_DYN*> parseDynamicTable();
   std::vector<std::string> parseLibDependedcise();

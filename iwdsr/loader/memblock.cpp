@@ -98,7 +98,6 @@ std::vector<ElfMemoryImage*> MemoryMap::getImages() {
     std::vector<ElfMemoryImage*> imgs;
     for ( auto img : images ) {
         if (img.second != nullptr) {
-            std::cout << std::format( "Elf image: {}  >", img.first) << std::endl;
             imgs.push_back(img.second);
         }
     }
