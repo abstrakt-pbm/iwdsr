@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <span>
+#include <format>
 #include <limits>
 #include <algorithm>
 
@@ -437,15 +438,22 @@ Symbol* ELF::getSymbolByName( std::string symbName ) {
     return symbols[ symbName ];
 }
 
-Symbol* ELF::getDynSymbolById( uint16_t id ) {
-    Symbol* result = nullptr;
+
+
+DynamicSymbol* ELF::getDynSymbolById( uint16_t id ) {
+    DynamicSymbol* result = nullptr;
     for ( auto dynSymb : dynSymbols ) {
         if (dynSymb.second->getId() == id) {
             result = dynSymb.second;
             break;
         }
     }
+
     return result;
+}
+
+DynamicSymbol* ELF::getDynSymbolByName( std::string dynamicSymbolName ) {
+    return dynSymbols[dynamicSymbolName];
 }
 
 uint64_t ELF::getMemImageSize() {
@@ -464,8 +472,8 @@ uint64_t ELF::getMemImageSize() {
     return maximumAddr - minimalAddr;
 }
 
-bool ELF::containSymbolByName( std::string symbName ) {
-    return symbols.contains(symbName);
+bool ELF::isExportSymbolByName( std::string symbName ) {
+    return dynSymbols.contains(symbName);
 }
 
 bool ELF::isSectionExistsByName( std::string sectionName ) {

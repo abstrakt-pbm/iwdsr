@@ -33,7 +33,7 @@ void Loader::loadDLL( std::string libName, ELF_PARSER::ELF* dynamicLib) {
         std::cout << std::format("DLL not found: {}", libName) << std::endl;
         return;
     }
-
+    std::cout << std::format("Start loading DLL: {}", libName) << std::endl;
     MemBlock* dllMemBlk = memMap.getFreeBlock(dynamicLib->getMemImageSize());
     ProcessMemory* procMem = proc->getMemory();
 

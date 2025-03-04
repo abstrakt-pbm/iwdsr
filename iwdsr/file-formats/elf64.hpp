@@ -366,8 +366,9 @@ class ELF {
   std::vector<std::string> getSymbolNames();
   Symbol* getSymbolById( uint16_t id );
   Symbol* getSymbolByName( std::string );
-  bool containSymbolByName( std::string );
-  Symbol* getDynSymbolById( uint16_t id );
+  bool isExportSymbolByName( std::string );
+  DynamicSymbol* getDynSymbolById( uint16_t id );
+  DynamicSymbol* getDynSymbolByName( std::string dynamiSymbolName );
   int8_t* fetchRawSymbolByName( std::string symbolName);
 
   std::vector<Rel*> getRels();

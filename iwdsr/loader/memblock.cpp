@@ -4,6 +4,7 @@
 
 void MemoryMap::makeElfMemoryImage( std::string name, MemBlock* blk, ELF_PARSER::ELF* originElf) {
     if ( !images.contains( name ) ) {
+        std::cout << std::format( "Making image for: {}", name ) << std::endl;
         images[name] = new ElfMemoryImage( name, originElf, blk );
     }
 }
@@ -91,11 +92,12 @@ MemBlock* MemoryMap::getBlkContainingAddr( uint64_t addr ) {
 }
 
 std::vector<ElfMemoryImage*> MemoryMap::getImages() {
-    std::vector<ElfMemoryImage*> imgs(images.size());
-    int i = 0;
+    std::vector<ElfMemoryImage*> imgs;
     for ( auto img : images ) {
-        imgs[i] = img.second;
-        i++;
+        if (img.second != nullptr) {
+            std::cout << std::format( "Elf image: {}  >", img.first) << std::endl;
+            imgs.push_back(img.second);
+        }
     }
     return imgs;
 }
@@ -134,8 +136,8 @@ uint64_t ElfMemoryImage::getBaseAddr() {
 
 uint64_t ElfMemoryImage::getSymbolAddressByName( std::string symbolName) {
     uint64_t addr = 0;
-    if ( originElf->containSymbolByName( symbolName ) ){
-        ELF_PARSER::Symbol* symbol = originElf->getSymbolByName(symbolName);  
+    if ( originElf->isExportSymbolByName( symbolName ) ){
+        ELF_PARSER::DynamicSymbol* symbol = originElf->getDynSymbolByName(symbolName);  
         addr = blk->getStartAddr() + symbol->getBaseAddr();
     }
     return addr;
