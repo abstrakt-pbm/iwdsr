@@ -20,7 +20,10 @@ MemoryMap::MemoryMap( uint64_t minimumAddr, uint64_t maximumAddr ) {
 }
 
 ElfMemoryImage* MemoryMap::getImage( std::string imageName) {
-    return this->images[imageName]; 
+    if ( images.contains(imageName) ){ 
+        return this->images[imageName]; 
+    }
+    return nullptr;
 }
 
 MemBlock* MemoryMap::allocate(uint64_t baseAddr, uint64_t lenght) {
