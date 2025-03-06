@@ -15,7 +15,7 @@ bool MemoryMap::isImageExists( std::string imageName) {
 MemoryMap::MemoryMap( uint64_t minimumAddr, uint64_t maximumAddr ) {
     this->minimalAddr = minimumAddr;
     this->maximumAddr = maximumAddr;
-    this->rootBlk = new MemBlock( minimumAddr, maximumAddr, MemBlkState::FREE );
+    this->rootBlk = new MemBlock( minimumAddr, maximumAddr, MemBlkState::FREE, MemBlkPermissions::NOACCESS);
 }
 
 ElfMemoryImage* MemoryMap::getImage( std::string imageName) {
@@ -25,9 +25,15 @@ ElfMemoryImage* MemoryMap::getImage( std::string imageName) {
     return nullptr;
 }
 
-MemBlock* MemoryMap::allocate(uint64_t baseAddr, uint64_t lenght) {
-    if (baseAddr > this->maximumAddr || baseAddr < minimalAddr) {
+MemBlock* MemoryMap::allocate(uint64_t baseAddr, uint64_t lenght, MemBlkPageSize psize) {
+    if ( baseAddr > this->maximumAddr || baseAddr < minimalAddr ) {
         std::cout << std::format("Allocation error | Address out of range: {:X}", baseAddr) << std::endl;
+        return nullptr;
+    }
+
+    uint64_t allignedLenght = calculateAllignedLenght(lenght, psize); 
+    if ( baseAddr + allignedLenght > maximumAddr ) {
+        std::cout << std::format("Allocation error | overflow");
         return nullptr;
     }
 
@@ -39,11 +45,12 @@ MemBlock* MemoryMap::allocate(uint64_t baseAddr, uint64_t lenght) {
 
     MemBlock* allocatedBlk = nullptr;
     MemBlock* leftFromBlk = nullptr;
-    if ( baseAddr > targetBlk->getStartAddr() && baseAddr < targetBlk->getFinishAddr()) {
+    if ( baseAddr > targetBlk->getStartAddr() && baseAddr < targetBlk->getFinishAddr() ) {
         MemBlock* leftFromBlk = new MemBlock(
             targetBlk->getStartAddr(),
             baseAddr - targetBlk->getStartAddr() - 1,
             MemBlkState::FREE,
+            MemBlkPermissions::NOACCESS,
             targetBlk->getLeftBlk()
         );
         
@@ -53,8 +60,9 @@ MemBlock* MemoryMap::allocate(uint64_t baseAddr, uint64_t lenght) {
 
     allocatedBlk = new MemBlock(
             baseAddr,
-            lenght,
+            allignedLenght,
             MemBlkState::ALLOCATED,
+            MemBlkPermissions::NOACCESS,
             leftFromBlk,
             targetBlk
     );
@@ -115,8 +123,24 @@ void MemoryMap::createNewRootBlk() {
     this->rootBlk = new MemBlock(
         minimalAddr, 
         maximumAddr - minimalAddr,
-        MemBlkState::FREE
+        MemBlkState::FREE,
+        MemBlkPermissions::NOACCESS
     );
+}
+
+MemBlock* MemoryMap::reserve( uint64_t baseAddr, uint64_t lenght, MemBlkPageSize psize ) {
+    MemBlock* blk = getBlkContainingAddr( baseAddr );
+    if ( blk == nullptr ) {
+        std::cout << std::format( "Failed to find blk to reserve" ) << std::endl;
+        return nullptr;
+    }
+
+    if ( blk->getState() == MemBlkState::RESERVED ) {
+        std::cout << std::format("Address already resrved") << std::endl;
+    }
+
+    
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -138,7 +162,7 @@ uint64_t ElfMemoryImage::getBaseAddr() {
 uint64_t ElfMemoryImage::getSymbolAddressByName( std::string symbolName) {
     uint64_t addr = 0;
     if ( originElf->isExportSymbolByName( symbolName ) ){
-        ELF_PARSER::DynamicSymbol* symbol = originElf->getDynSymbolByName(symbolName);  
+        ELF_PARSER::DynamicSymbol* symbol = originElf->getDynSymbolByName(symbolName);
         addr = blk->getStartAddr() + symbol->getBaseAddr();
     }
     return addr;
@@ -146,8 +170,9 @@ uint64_t ElfMemoryImage::getSymbolAddressByName( std::string symbolName) {
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-MemBlock::MemBlock( uint64_t startAddr, uint64_t lenght, MemBlkState state, MemBlock* lBlk, MemBlock* rBlk ) {
+MemBlock::MemBlock( uint64_t startAddr, uint64_t lenght, MemBlkState state, MemBlkPermissions permission, MemBlock* lBlk, MemBlock* rBlk ) {
     this->state = state;
+    this->permission = permission;
     this->startAddr = startAddr;
     this->lenght = lenght;
     this->leftBlk = lBlk;
@@ -194,3 +219,15 @@ void MemBlock::setStartAddr( uint64_t startAddr ) {
     this->startAddr = startAddr;
 }
 
+uint64_t MemoryMap::calculateAllignedLenght( uint64_t baseLenght, MemBlkPageSize psize ) {
+    uint64_t pages = baseLenght / psize;
+    if ( baseLenght % psize > 0 ) {
+        pages += 1;
+    }
+
+    return pages * psize;
+}
+
+MemBlkPageSize allignmentToPageSize( uint64_t allignment ) {
+    return static_cast<MemBlkPageSize>(allignment);
+}

@@ -13,3 +13,4 @@ int main() {
 }
 
 // has big problem with separate askii symbols and making dynsymb tab with names
+// Завтра преработать логику memory map, добавить резервацию памяти и алокацию на ней

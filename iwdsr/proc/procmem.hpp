@@ -9,7 +9,6 @@ enum P_SIZE {
     GB_1 = 1073741824
 };
 
-P_SIZE allignmentToPageSize(uint64_t allignment);
 
 class ProcessMemory {
 public:

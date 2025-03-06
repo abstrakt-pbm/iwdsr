@@ -11,16 +11,17 @@ Loader::Loader(Process* proc) {
 }
 
 void Loader::loadElf(ELF_PARSER::ELF* elfFile) {
-    MemBlock* elfMemBlk = memMap.allocate( 0x10000, elfFile->getMemImageSize());
+    MemBlock* elfMemBlk = memMap.reserve( 0x10000, elfFile->getMemImageSize(), MemBlkPageSize::KB4 );
 
     if ( elfMemBlk == nullptr) {
-        std::cout << "Failed to get memory block for executable" << std::endl;
+        std::cout << "Failed to reserve memory block for executable" << std::endl;
         return;
     }
 
-    loadElfInMemBlk( elfFile, elfMemBlk ); 
+    loadElfInMemBlk( elfFile, elfMemBlk );
 
     memMap.makeElfMemoryImage( BASE_ELF_MEMORY_IMAGE, elfMemBlk, elfFile );
+
     for ( auto lib : elfFile->getLibDependencies() ) {
         loadDLL(lib, libPool[lib]);
     }
@@ -33,14 +34,16 @@ void Loader::loadDLL( std::string libName, ELF_PARSER::ELF* dynamicLib) {
         std::cout << std::format("DLL not found: {}", libName) << std::endl;
         return;
     }
+    
     std::cout << std::format("Start loading DLL: {}", libName) << std::endl;
-    MemBlock* dllMemBlk = memMap.getFreeBlock(dynamicLib->getMemImageSize());
-    ProcessMemory* procMem = proc->getMemory();
 
+    MemBlock* dllMemBlk = memMap.reserve(dynamicLib->getMemImageSize(), MemBlkPageSize::KB4);
     if ( dllMemBlk == nullptr ) {
-        std::cout << std::format("Failed to get memory block for: {}", libName) << std::endl;
+        std::cout << std::format("Failed to reserve memory for DLL: {}", libName) << std::endl;
         return;
     }
+
+    ProcessMemory* procMem = proc->getMemory();
 
     loadElfInMemBlk( dynamicLib, dllMemBlk );
     memMap.makeElfMemoryImage( libName, dllMemBlk, dynamicLib );
@@ -58,6 +61,13 @@ void Loader::loadElfInMemBlk(ELF_PARSER::ELF* elf, MemBlock* blk) {
             loadableSection->p_offset,
             loadableSection->p_memsz
         );
+
+        memMap.allocate(
+            loadableSection->p_offset,
+            loadableSection->p_memsz,
+            allignmentToPageSize(loadableSection->p_align)
+        );
+
         procMem->writeMem(
             loadableSection->p_vaddr + blk->getStartAddr(),
             rawSection,

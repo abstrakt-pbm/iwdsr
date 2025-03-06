@@ -34,6 +34,7 @@ void SR::SymbolResolver::makeRelocation( ELF_PARSER::Rela* rela, ElfMemoryImage*
     ELF_PARSER::RelocationType reloType = rela->getRelocationType();
     switch ( reloType ) {
         case ELF_PARSER::R_X86_64_GLOB_DAT:
+        case ELF_PARSER::R_X86_64_64:
         case ELF_PARSER::R_X86_64_JUMP_SLOT: {
             uint64_t writeAddr = img->getBaseAddr() + rela->r_offset;
             uint16_t dynSymbId = rela->getSymbolId();
@@ -53,13 +54,32 @@ void SR::SymbolResolver::makeRelocation( ELF_PARSER::Rela* rela, ElfMemoryImage*
             std::cout << std::format("Resolved Symbol: {}", dynSymb->getName()) << std::endl;
             break;
         }
+
+        case ELF_PARSER::R_X86_64_RELATIVE: {
+            uint64_t resultAddress = img->getBaseAddr() + rela->r_addend;
+            procMem->writeMem(
+                rela->r_offset,
+                (int8_t*)(resultAddress),
+                8
+            );
+            
+            break;
+        }
+
+        case ELF_PARSER::R_X86_64_REX_GOTPCRELX: {
+            
+        }
+
+        case ELF_PARSER::R_X86_64_TPOFF64: {
+
+        }
         
+
         default : {
             std::cout << std::format( "Unimplemented relocation: {}", (int)reloType ) << std::endl;
         }
     }
 }
-
 
 ElfMemoryImage* SR::SymbolResolver::findImgWithSymbol( std::string symbolName) {
     auto imgs = memMap->getImages();

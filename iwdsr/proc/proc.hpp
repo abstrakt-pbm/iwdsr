@@ -7,17 +7,6 @@
 
 #include "procmem.hpp"
 
-enum MemoryAccess {
-    READ,
-    WRITE,
-    EXECUTE,
-    RW,
-    RE,
-    RWE,
-    WE
-};
-
-
 class Process {
 protected:
     ProcessMemory* mem;

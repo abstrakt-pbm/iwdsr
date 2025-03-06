@@ -6,11 +6,6 @@
 #include "winmem.hpp"
 
 
-
-P_SIZE allignmentToPageSize(uint64_t allignment) {
-    return static_cast<P_SIZE>(allignment);
-}
-
 WinProcMemory::WinProcMemory(HMODULE ntdllHandle, HANDLE procHandle) {
     this->procHandle = procHandle; 
     this->ntdllHmod = ntdllHandle;
