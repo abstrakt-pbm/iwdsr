@@ -4,6 +4,7 @@
 #include <string>
 #include "../file-formats/elf64.hpp"
 
+uint64_t previousPow2( uint64_t n );
 
 enum MemBlkPermissions {
     NOACCESS,
@@ -35,6 +36,8 @@ class MemBlock {
     MemBlkState state;
     MemBlkPermissions permission;
     uint64_t startAddr;
+
+    MemBlock* father;
     MemBlock* leftBlk;
     MemBlock* rightBlk;
     MemBlock* childBlk;
@@ -42,18 +45,22 @@ class MemBlock {
     uint64_t lenght;
 
     public:
-    MemBlock( uint64_t startAddr, uint64_t lenght, MemBlkState state, MemBlkPermissions permission, MemBlock* lBlk = nullptr, MemBlock* rBlk = nullptr );
+    MemBlock( uint64_t startAddr, uint64_t lenght, MemBlkState state, MemBlkPermissions permission, MemBlock* father = nullptr, MemBlock* childBlk = nullptr, MemBlock* lBlk = nullptr, MemBlock* rBlk = nullptr );
     uint64_t getStartAddr();
     uint64_t getFinishAddr();
     uint64_t getLenght();
     MemBlock* getLeftBlk();
     MemBlock* getRightBlk();
+    MemBlock* getChild();
+    MemBlock* getFather();
     MemBlkState getState();
 
     void setLeftBlk( MemBlock* );
     void setRightBlk( MemBlock* );
     void setStartAddr( uint64_t );
     void setLenght( uint64_t );
+    void setChild( MemBlock* );
+    void setFather( MemBlock* );
 
 };
 
@@ -86,7 +93,9 @@ class MemoryMap{
     std::unordered_map<std::string, ElfMemoryImage*> images;
     MemBlock* rootBlk;
 
-    uint64_t calculateAllignedLenght( uint64_t baseLenght, MemBlkPageSize psize );
+    uint64_t calculateAllignLeft( uint64_t baseLenght );
+    uint64_t calculateAllignedLenght( uint64_t startAddr, MemBlkPageSize psize);
+    void insertMemBlk( MemBlock* blk ,MemBlock* blkWhereInsert );
 
     public:
     MemoryMap() = default;
@@ -100,7 +109,7 @@ class MemoryMap{
     MemBlock* getBlkContainingAddr( uint64_t addr );
     MemBlock* getFreeBlock(uint64_t size);
 
-    MemBlock* allocate(uint64_t baseAddr, uint64_t lenght, MemBlkPageSize psize);
+    MemBlock* allocate( uint64_t baseAddr, uint64_t lenght, MemBlkPageSize psize, MemBlkPermissions permission );
     void unalloc( MemBlock* blk );
     MemBlock* reserve( uint64_t baseAddr, uint64_t lenght, MemBlkPageSize psize );
     MemBlock* reserve( uint64_t lenght, MemBlkPageSize psize );

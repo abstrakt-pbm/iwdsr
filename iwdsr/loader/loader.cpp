@@ -65,7 +65,8 @@ void Loader::loadElfInMemBlk(ELF_PARSER::ELF* elf, MemBlock* blk) {
         memMap.allocate(
             loadableSection->p_offset,
             loadableSection->p_memsz,
-            allignmentToPageSize(loadableSection->p_align)
+            allignmentToPageSize(loadableSection->p_align),
+            MemBlkPermissions::RWE
         );
 
         procMem->writeMem(

@@ -9,7 +9,10 @@ int main() {
     Loader ld(&proc);
     ld.fillLibPool("libsss");
     ld.loadElf(&elf);
-    //for(;;);
+    
+    MemoryMap mm(0x10000, 0x00007FFFFFFFFFFF);
+    mm.reserve(0x10000,0x10000, MemBlkPageSize::KB4);
+    mm.allocate(0x10000,0x10000, MemBlkPageSize::KB4, MemBlkPermissions::RWE);
 }
 
 // has big problem with separate askii symbols and making dynsymb tab with names
