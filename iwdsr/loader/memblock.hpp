@@ -61,6 +61,7 @@ class MemBlock {
     void setLenght( uint64_t );
     void setChild( MemBlock* );
     void setFather( MemBlock* );
+    void setState( MemBlkState);
 
 };
 

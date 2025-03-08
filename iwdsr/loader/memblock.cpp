@@ -39,6 +39,11 @@ MemBlock* MemoryMap::allocate(uint64_t baseAddr, uint64_t lenght, MemBlkPageSize
     }
 
     MemBlock* targetBlk = getBlkContainingAddr( baseAddr );
+
+    if ( targetBlk == nullptr ) {
+        std::cout << std::format("Failed to find blk containing addr: {:#x}", baseAddr) << std::endl;
+    }
+
     if ( targetBlk->getState() == MemBlkState::FREE ) {
         std::cout << std::format("Allocation error | Memory Unreserved: {:X}", baseAddr) << std::endl;
         return nullptr;
@@ -54,7 +59,21 @@ MemBlock* MemoryMap::allocate(uint64_t baseAddr, uint64_t lenght, MemBlkPageSize
          permission
     );
 
-    insertMemBlk( allocatedBlk, targetBlk->getChild());
+    MemBlock* blkWhereInsert = targetBlk->getChild();
+
+    while( blkWhereInsert != nullptr ) {
+        if ( blkWhereInsert->getState() == MemBlkState::FREE ){
+            break;
+        }
+        blkWhereInsert = blkWhereInsert->getRightBlk();
+    }
+
+    if ( blkWhereInsert == nullptr ) {
+        std::cout << std::format("Failed to find free area") << std::endl;
+        return nullptr;
+    }
+
+    insertMemBlk( allocatedBlk, blkWhereInsert);
 
     return allocatedBlk;
 
@@ -168,6 +187,7 @@ MemBlock* MemoryMap::reserve( uint64_t lenght, MemBlkPageSize psize ) {
         allignedLenght,
         MemBlkState::RESERVED,
         MemBlkPermissions::NOACCESS,
+        nullptr,
         reservedBlkChild
     );
     reservedBlkChild->setFather(reservedBlk);
@@ -180,10 +200,12 @@ void MemoryMap::insertMemBlk( MemBlock* blkToInsert, MemBlock* blkWhereInsert ) 
     uint64_t allignedLeftLim = blkToInsert->getStartAddr();
     uint64_t allignedLenght = blkToInsert->getLenght();
 
+    if ( blkWhereInsert->getStartAddr() == allignedLeftLim && blkWhereInsert->getLenght() == allignedLenght ) {
+        blkWhereInsert->setState( blkToInsert->getState() );
+        return;
+    }
+
     blkWhereInsert->setLenght( std::abs((int64_t)(blkWhereInsert->getLenght() - allignedLenght)) );
-
-    // случий когда алоцированый блок равен длинне резервации
-
 
     if ( allignedLeftLim + allignedLenght - 1 == maximumAddr ) {
         blkWhereInsert->setRightBlk(blkToInsert);
@@ -221,14 +243,8 @@ void MemoryMap::insertMemBlk( MemBlock* blkToInsert, MemBlock* blkWhereInsert ) 
         blkWhereInsert->setLeftBlk( blkToInsert );
     }
 
-    if (blkToInsert->getRightBlk()->getLenght() == 0) {
-        delete blkToInsert->getRightBlk();
-        blkToInsert->setRightBlk(nullptr);
-    }
+    
 }
-
-
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -324,6 +340,10 @@ void MemBlock::setStartAddr( uint64_t startAddr ) {
     this->startAddr = startAddr;
 }
 
+void MemBlock::setState( MemBlkState state ) {
+    this->state = state;
+}
+
 uint64_t MemoryMap::calculateAllignLeft( uint64_t startAddr) {
     return previousPow2(startAddr);
 }
@@ -333,7 +353,6 @@ uint64_t MemoryMap::calculateAllignedLenght( uint64_t baseLenght, MemBlkPageSize
     if ( baseLenght % psize > 0 ) {
         pages += 1;
     }
-
     return pages * psize;
 }
 

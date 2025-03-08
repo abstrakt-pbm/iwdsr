@@ -4,6 +4,7 @@
 
 Loader::Loader(Process* proc) {
     this->proc = proc;
+    proc->getMemory()->setBaseOffset(0x10000);
     this->symbolResolver = SR::SymbolResolver(proc->getMemory(), &memMap); 
     memMap.setMinimalAddress(0x10000);
     memMap.setMaximumAddress(0x00007FFFFFFFFFFF);
@@ -63,7 +64,7 @@ void Loader::loadElfInMemBlk(ELF_PARSER::ELF* elf, MemBlock* blk) {
         );
 
         memMap.allocate(
-            loadableSection->p_offset,
+            blk->getStartAddr() + loadableSection->p_offset,
             loadableSection->p_memsz,
             allignmentToPageSize(loadableSection->p_align),
             MemBlkPermissions::RWE

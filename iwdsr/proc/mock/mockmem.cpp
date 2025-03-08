@@ -4,6 +4,7 @@
 
 uint64_t MockMemory::allocate( uint64_t baseAddress, uint64_t byteCount ,P_SIZE pageSize ) {
     std::cout << std::format( "Allocated: {:X} - {:X}",baseAddress, baseAddress + byteCount ) << std::endl; 
+    return 0;
 }
 
 void MockMemory::dealloc(uint64_t addr) {
