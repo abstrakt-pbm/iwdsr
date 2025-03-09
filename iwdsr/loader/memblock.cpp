@@ -72,7 +72,7 @@ MemBlock* MemoryMap::allocate(uint64_t baseAddr, uint64_t lenght, MemBlkPageSize
         std::cout << std::format("Failed to find free area") << std::endl;
         return nullptr;
     }
-
+    allocatedBlk->setFather(targetBlk);
     insertMemBlk( allocatedBlk, blkWhereInsert);
 
     return allocatedBlk;
@@ -94,7 +94,7 @@ MemBlock* MemoryMap::getFreeBlock( uint64_t size ) {
 MemBlock* MemoryMap::getBlkContainingAddr( uint64_t addr ) {
     MemBlock* currentBlk = rootBlk;
     while( currentBlk != nullptr ) {
-        if ( addr >= currentBlk->getStartAddr() && addr < currentBlk->getFinishAddr() ) {
+        if ( addr >= currentBlk->getStartAddr() && addr <= currentBlk->getFinishAddr() ) {
             break;
         }
         currentBlk = currentBlk->getRightBlk();
@@ -132,6 +132,7 @@ void MemoryMap::createNewRootBlk() {
 MemBlock* MemoryMap::reserve( uint64_t baseAddr, uint64_t lenght, MemBlkPageSize psize ) {
     uint64_t allignedLeftLim = calculateAllignLeft( baseAddr );
     uint64_t allignedLenght = calculateAllignedLenght( baseAddr - allignedLeftLim + lenght, psize );
+    std::cout << std::format("Reserve memory: {:#x} - {:#x}", allignedLeftLim, allignedLeftLim + allignedLenght ) << std::endl;
 
     if ( allignedLeftLim < minimalAddr || allignedLeftLim + allignedLenght - 1 > maximumAddr ) {
         std::cout << "Reservation error | Out of range" << std::endl;
@@ -144,7 +145,7 @@ MemBlock* MemoryMap::reserve( uint64_t baseAddr, uint64_t lenght, MemBlkPageSize
     }
 
     if ( targetBlk->getState() == MemBlkState::RESERVED ) {
-        std::cout << std::format("Address already resrved") << std::endl;
+        std::cout << std::format("Address already reserved") << std::endl;
         return nullptr;
     }
     
@@ -173,8 +174,15 @@ MemBlock* MemoryMap::reserve( uint64_t baseAddr, uint64_t lenght, MemBlkPageSize
 MemBlock* MemoryMap::reserve( uint64_t lenght, MemBlkPageSize psize ) {
 
     MemBlock* freeBlk = getFreeBlock( lenght );
+    if ( freeBlk == nullptr ) {
+        std::cout << std::format("Not enough memory") << std::endl;
+        return nullptr;
+    }
+
     uint64_t allignedLenght = calculateAllignedLenght( lenght, psize );
     
+    std::cout << std::format("Reserve memory: {:#x} - {:#x}", freeBlk->getStartAddr(), freeBlk->getStartAddr() + allignedLenght ) << std::endl;
+
     MemBlock* reservedBlkChild = new MemBlock(
         freeBlk->getStartAddr(),
         allignedLenght,
@@ -196,54 +204,70 @@ MemBlock* MemoryMap::reserve( uint64_t lenght, MemBlkPageSize psize ) {
     return reservedBlk;
 }
 
-void MemoryMap::insertMemBlk( MemBlock* blkToInsert, MemBlock* blkWhereInsert ) {
-    uint64_t allignedLeftLim = blkToInsert->getStartAddr();
-    uint64_t allignedLenght = blkToInsert->getLenght();
+void MemoryMap::insertMemBlk( MemBlock* blkToInsert, MemBlock* blkWhereInsert ) { 
+    ///нужно доработать всю логику
+    uint64_t startAddr = blkToInsert->getStartAddr();
+    uint64_t lenght = blkToInsert->getLenght();
 
-    if ( blkWhereInsert->getStartAddr() == allignedLeftLim && blkWhereInsert->getLenght() == allignedLenght ) {
-        blkWhereInsert->setState( blkToInsert->getState() );
+    MemBlock* blkLeftFromBWI = blkWhereInsert->getLeftBlk();
+    MemBlock* blkRightFromBWI = blkWhereInsert->getRightBlk();
+
+    if ( blkWhereInsert->getStartAddr() == startAddr && blkWhereInsert->getLenght() == lenght ) {
+        blkWhereInsert->setState(blkToInsert->getState());
         return;
     }
 
-    blkWhereInsert->setLenght( std::abs((int64_t)(blkWhereInsert->getLenght() - allignedLenght)) );
+    if ( blkWhereInsert->getStartAddr() == startAddr ) {
+        blkWhereInsert->setLenght( blkWhereInsert->getLenght() - lenght );
+        blkWhereInsert->setStartAddr(startAddr + lenght);
+        blkWhereInsert->setLeftBlk(blkToInsert);
+        blkToInsert->setRightBlk(blkWhereInsert);
+        blkToInsert->setLeftBlk(blkLeftFromBWI);
+        if ( blkLeftFromBWI != nullptr ){
+            blkLeftFromBWI->setRightBlk(blkToInsert);
+        }
 
-    if ( allignedLeftLim + allignedLenght - 1 == maximumAddr ) {
+        if ( blkWhereInsert->getFather() == nullptr && minimalAddr == startAddr ) {
+            rootBlk = blkToInsert;
+        } else if ( blkWhereInsert->getFather() != nullptr && blkWhereInsert->getStartAddr() == startAddr ){
+            blkWhereInsert->getChild()->setChild(blkToInsert);
+        }
+
+
+    }
+
+    if ( blkToInsert->getFinishAddr() == blkWhereInsert->getFinishAddr() ) {
+        blkWhereInsert->setLenght( blkWhereInsert->getLenght() - lenght );
         blkWhereInsert->setRightBlk(blkToInsert);
         blkToInsert->setLeftBlk(blkWhereInsert);
-    }
-    
-    if ( allignedLeftLim == minimalAddr && blkWhereInsert->getFather() == nullptr ) {
-        blkWhereInsert->setStartAddr(allignedLeftLim + allignedLenght);
-        blkWhereInsert->setLeftBlk(blkToInsert);
-        blkToInsert->setRightBlk(blkWhereInsert);
-        rootBlk = blkToInsert;
+        blkToInsert->setRightBlk(blkRightFromBWI);
+        if ( blkRightFromBWI != nullptr ) {
+            blkRightFromBWI->setLeftBlk(blkToInsert); 
+        }
     }
 
-    if ( blkWhereInsert->getFather() != nullptr && blkWhereInsert->getFather()->getStartAddr() == allignedLeftLim ) {
-        blkWhereInsert->setStartAddr(allignedLeftLim + allignedLenght);
-        blkWhereInsert->setLeftBlk(blkToInsert);
-        blkToInsert->setRightBlk(blkWhereInsert);
-        blkWhereInsert->getFather()->setChild(blkToInsert); 
-    }
-
-
-    if ( allignedLeftLim > minimalAddr && allignedLeftLim + allignedLenght - 1 < maximumAddr ) {
-        MemBlock* blkLeftFromBlkToInsert = new MemBlock(
-           blkWhereInsert->getStartAddr(),
-           blkToInsert->getStartAddr() - blkWhereInsert->getStartAddr(),
-           MemBlkState::FREE,
-           MemBlkPermissions::NOACCESS,
-           blkWhereInsert->getLeftBlk(),
-           blkToInsert
+    if ( startAddr > blkWhereInsert->getStartAddr() && blkToInsert->getFinishAddr() < blkWhereInsert->getFinishAddr() ) {
+        MemBlock* splitBlk = new MemBlock(
+            blkToInsert->getFinishAddr() + 1,
+            blkWhereInsert->getLenght() - blkToInsert->getFinishAddr() + 1,
+            blkWhereInsert->getState(),
+            blkWhereInsert->getPermissions(),
+            nullptr,
+            nullptr
         );
-
-        blkToInsert->setLeftBlk( blkLeftFromBlkToInsert );
-        blkToInsert->setRightBlk( blkWhereInsert );
-        blkWhereInsert->setStartAddr( allignedLeftLim + allignedLenght );
-        blkWhereInsert->setLeftBlk( blkToInsert );
+        blkWhereInsert->setRightBlk(blkToInsert);
+        blkToInsert->setLeftBlk(blkWhereInsert);
+        splitBlk->setLeftBlk(blkToInsert);
+        blkToInsert->setRightBlk(splitBlk);
+        splitBlk->setRightBlk(blkRightFromBWI);
+        if ( blkRightFromBWI != nullptr ) {
+            blkRightFromBWI->setLeftBlk(splitBlk);
+        }
+    
     }
 
-    
+
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -305,7 +329,7 @@ MemBlkState MemBlock::getState() {
 }
 
 uint64_t MemBlock::getFinishAddr() {
-    return this->startAddr + lenght;
+    return this->startAddr + lenght - 1;
 }
 
 MemBlock* MemBlock::getChild() {
@@ -314,6 +338,10 @@ MemBlock* MemBlock::getChild() {
 
 MemBlock* MemBlock::getFather() {
     return this->father;
+}
+
+MemBlkPermissions MemBlock::getPermissions() {
+    return this->permission;
 }
 
 void MemBlock::setLeftBlk( MemBlock* blk) {

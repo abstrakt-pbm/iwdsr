@@ -54,6 +54,7 @@ class MemBlock {
     MemBlock* getChild();
     MemBlock* getFather();
     MemBlkState getState();
+    MemBlkPermissions getPermissions();
 
     void setLeftBlk( MemBlock* );
     void setRightBlk( MemBlock* );
