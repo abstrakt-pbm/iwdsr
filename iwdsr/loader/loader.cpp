@@ -57,6 +57,8 @@ void Loader::loadDLL( std::string libName, ELF_PARSER::ELF* dynamicLib) {
 
 void Loader::loadElfInMemBlk(ELF_PARSER::ELF* elf, MemBlock* blk) {
     ProcessMemory* procMem = proc->getMemory();
+    procMem->reserve( blk->getStartAddr(), blk->getLenght(), P_SIZE::KB_4);
+
     for ( auto loadableSection : elf->getProgramHeadersByPType(ELF_PARSER::P_TYPE::PT_LOAD)) {
         int8_t* rawSection = elf->rawRead(
             loadableSection->p_offset,

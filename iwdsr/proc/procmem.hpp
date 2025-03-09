@@ -13,6 +13,7 @@ enum P_SIZE {
 class ProcessMemory {
     uint64_t baseOffset;
 public:
+    virtual uint64_t reserve(uint64_t baseAddress, uint64_t byteCount ,P_SIZE pageSize) = 0; 
     virtual uint64_t allocate(uint64_t baseAddress, uint64_t byteCount ,P_SIZE pageSize) = 0;
     virtual void dealloc(uint64_t addr) = 0;
     virtual void writeMem(uint64_t baseAddress, int8_t* payload, uint64_t byteCount) = 0; 

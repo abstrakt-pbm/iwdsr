@@ -3,6 +3,7 @@
 
 class MockMemory : public ProcessMemory {
     public:
+    virtual uint64_t reserve(uint64_t baseAddress, uint64_t byteCount ,P_SIZE pageSize) override;
     virtual uint64_t allocate(uint64_t baseAddress, uint64_t byteCount ,P_SIZE pageSize) override;
     virtual void dealloc(uint64_t addr) override;
     virtual void writeMem(uint64_t baseAddress, int8_t* payload, uint64_t byteCount) override; 

@@ -13,6 +13,10 @@ WinProcMemory::WinProcMemory(HMODULE ntdllHandle, HANDLE procHandle) {
     clearAddressSpace();
 }
 
+uint64_t WinProcMemory::reserve( uint64_t baseAddress, uint64_t byteCount ,P_SIZE pageSize ) {
+    return 0;
+}
+
 uint64_t WinProcMemory::allocate(uint64_t baseAddress, uint64_t byteCount ,P_SIZE pageSize) {
     MEMORY_BASIC_INFORMATION mbi;
     VirtualQueryEx(
