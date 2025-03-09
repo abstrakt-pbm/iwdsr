@@ -36,7 +36,7 @@ void SR::SymbolResolver::makeRelocation( ELF_PARSER::Rela* rela, ElfMemoryImage*
         case ELF_PARSER::R_X86_64_GLOB_DAT:
         case ELF_PARSER::R_X86_64_64:
         case ELF_PARSER::R_X86_64_JUMP_SLOT: {
-            uint64_t writeAddr = img->getBaseAddr() + rela->r_offset;
+            uint64_t writeAddr = img->getBaseAddr() + rela->r_offset + rela->r_addend;
             uint16_t dynSymbId = rela->getSymbolId();
             ELF_PARSER::DynamicSymbol* dynSymb = img->getOriginElf()->getDynSymbolById(dynSymbId);
             ElfMemoryImage* libImg = findImgWithSymbol( dynSymb->getName());
@@ -56,18 +56,23 @@ void SR::SymbolResolver::makeRelocation( ELF_PARSER::Rela* rela, ElfMemoryImage*
         }
 
         case ELF_PARSER::R_X86_64_RELATIVE: {
-            uint64_t resultAddress = img->getBaseAddr() + rela->r_addend;
+            uint64_t resultAddress = img->getBaseAddr() + rela->r_offset + rela->r_addend;
             procMem->writeMem(
                 rela->r_offset,
                 (int8_t*)(resultAddress),
                 8
             );
-            
             break;
         }
 
         case ELF_PARSER::R_X86_64_REX_GOTPCRELX: {
-            
+           uint64_t resultWrite = img->getDynSymAddressById(rela->getSymbolId()) - rela->r_offset; 
+           procMem->writeMem(
+            rela->r_offset,
+            (int8_t*)(resultWrite),
+            8
+           );
+           break;
         }
 
         case ELF_PARSER::R_X86_64_TPOFF64: {

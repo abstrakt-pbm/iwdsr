@@ -291,6 +291,14 @@ uint64_t ElfMemoryImage::getSymbolAddressByName( std::string symbolName) {
     return addr;
 }
 
+uint64_t ElfMemoryImage::getDynSymAddressById( uint16_t id ) {
+    uint64_t addr = 0;
+    ELF_PARSER::DynamicSymbol* dynSymb = originElf->getDynSymbolById(id);
+    if ( dynSymb != nullptr) {
+        addr = blk->getStartAddr() + dynSymb->getBaseAddr();
+    }
+    return addr;
+}
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 MemBlock::MemBlock( uint64_t startAddr, uint64_t lenght, MemBlkState state, MemBlkPermissions permission, MemBlock* father , MemBlock* childBlk, MemBlock* lBlk, MemBlock* rBlk ) {

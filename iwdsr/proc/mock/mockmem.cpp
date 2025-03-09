@@ -11,6 +11,11 @@ void MockMemory::dealloc(uint64_t addr) {
 
 }
 
+uint64_t MockMemory::reserve(uint64_t baseAddress, uint64_t byteCount ,P_SIZE pageSize) {
+    std::cout << std::format("Reserved {:#X} - {:#X}", baseAddress, baseAddress + byteCount) << std::endl;
+    return 0;
+}
+
 void MockMemory::writeMem( uint64_t baseAddress, int8_t* payload, uint64_t byteCount ) {
     std::cout << std::format( "Write to: {:X} bytes: {}", baseAddress, byteCount ) << std::endl; 
 }

@@ -4,8 +4,8 @@
 #include "iwdsr/proc/mock/mockproc.hpp"
 
 int main() {
-    //MockProcess proc;
-    WinProc proc;
+    MockProcess proc;
+    //WinProc proc;
     proc.getMemory()->allocate(0X10000, P_SIZE::GB_1, P_SIZE::GB_1);
     ELF_PARSER::ELF elf("C:\\making\\iwdsr\\a.out");
     Loader ld(&proc);
