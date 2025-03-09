@@ -205,10 +205,10 @@ MemBlock* MemoryMap::reserve( uint64_t lenght, MemBlkPageSize psize ) {
 }
 
 void MemoryMap::insertMemBlk( MemBlock* blkToInsert, MemBlock* blkWhereInsert ) { 
-    ///нужно доработать всю логику
     uint64_t startAddr = blkToInsert->getStartAddr();
     uint64_t lenght = blkToInsert->getLenght();
 
+    uint64_t bwiInitialStartAddr = blkWhereInsert->getStartAddr();
     MemBlock* blkLeftFromBWI = blkWhereInsert->getLeftBlk();
     MemBlock* blkRightFromBWI = blkWhereInsert->getRightBlk();
 
@@ -229,8 +229,8 @@ void MemoryMap::insertMemBlk( MemBlock* blkToInsert, MemBlock* blkWhereInsert ) 
 
         if ( blkWhereInsert->getFather() == nullptr && minimalAddr == startAddr ) {
             rootBlk = blkToInsert;
-        } else if ( blkWhereInsert->getFather() != nullptr && blkWhereInsert->getStartAddr() == startAddr ){
-            blkWhereInsert->getChild()->setChild(blkToInsert);
+        } else if ( blkWhereInsert->getFather() != nullptr && bwiInitialStartAddr == startAddr ){
+            blkWhereInsert->getFather()->setChild(blkToInsert);
         }
 
 
@@ -263,11 +263,7 @@ void MemoryMap::insertMemBlk( MemBlock* blkToInsert, MemBlock* blkWhereInsert ) 
         if ( blkRightFromBWI != nullptr ) {
             blkRightFromBWI->setLeftBlk(splitBlk);
         }
-    
     }
-
-
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
