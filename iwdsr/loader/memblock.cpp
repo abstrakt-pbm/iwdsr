@@ -255,6 +255,8 @@ void MemoryMap::insertMemBlk( MemBlock* blkToInsert, MemBlock* blkWhereInsert ) 
             nullptr,
             nullptr
         );
+        
+        blkWhereInsert->setLenght( blkWhereInsert->getLenght() - lenght );
         blkWhereInsert->setRightBlk(blkToInsert);
         blkToInsert->setLeftBlk(blkWhereInsert);
         splitBlk->setLeftBlk(blkToInsert);
