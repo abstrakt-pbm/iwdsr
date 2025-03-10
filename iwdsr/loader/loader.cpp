@@ -58,8 +58,52 @@ void Loader::loadDLL( std::string libName, ELF_PARSER::ELF* dynamicLib) {
 void Loader::loadElfInMemBlk(ELF_PARSER::ELF* elf, MemBlock* blk) {
     ProcessMemory* procMem = proc->getMemory();
     procMem->reserve( blk->getStartAddr(), blk->getLenght(), P_SIZE::KB_4);
+    std::vector<ELF_PARSER::ProgramHeader*> ptDynamicSections = elf->getProgramHeadersByPType(ELF_PARSER::P_TYPE::PT_DYNAMIC);
+    std::vector<ELF_PARSER::ProgramHeader*> ptTLSSections = elf->getProgramHeadersByPType(ELF_PARSER::P_TYPE::PT_TLS);
+    std::vector<ELF_PARSER::ProgramHeader*> ptRELROSections = elf->getProgramHeadersByPType(ELF_PARSER::P_TYPE::PT_GNU_RELRO);
+    std::vector<ELF_PARSER::ProgramHeader*> ptGnuStackSections = elf->getProgramHeadersByPType(ELF_PARSER::P_TYPE::PT_GNU_STACK);
+    std::vector<ELF_PARSER::ProgramHeader*> ptEhFrameSections = elf->getProgramHeadersByPType(ELF_PARSER::P_TYPE::PT_GNU_EH_FRAME);
+    std::vector<ELF_PARSER::ProgramHeader*> ptPropertySections = elf->getProgramHeadersByPType(ELF_PARSER::P_TYPE::PT_GNU_PROPERTY);
 
-    for ( auto loadableSection : elf->getProgramHeadersByPType(ELF_PARSER::P_TYPE::PT_LOAD)) {
+    std::vector<ELF_PARSER::ProgramHeader*> loadableSections = elf->getProgramHeadersByPType(ELF_PARSER::P_TYPE::PT_LOAD);
+
+    loadableSections.insert(
+        loadableSections.end(),
+        ptDynamicSections.begin(),
+        ptDynamicSections.end()
+    );
+
+    loadableSections.insert(
+        loadableSections.end(),
+        ptTLSSections.begin(),
+        ptTLSSections.end()
+    );
+
+    loadableSections.insert(
+        loadableSections.end(),
+        ptRELROSections.begin(),
+        ptRELROSections.end()
+    );
+
+    loadableSections.insert(
+        loadableSections.end(),
+        ptGnuStackSections.begin(),
+        ptGnuStackSections.end()
+    );
+
+    loadableSections.insert(
+        loadableSections.end(),
+        ptEhFrameSections.begin(),
+        ptEhFrameSections.end()
+    );
+
+    loadableSections.insert(
+        loadableSections.end(),
+        ptPropertySections.begin(),
+        ptPropertySections.end()
+    );
+
+    for ( auto loadableSection : loadableSections ) {
         int8_t* rawSection = elf->rawRead(
             loadableSection->p_offset,
             loadableSection->p_memsz

@@ -76,6 +76,10 @@ enum P_TYPE : std::uint32_t {
   PT_PHDR = 0x00000006,
   PT_TLS = 0x00000007,
   PT_LOOS = 0x60000000,
+  PT_GNU_EH_FRAME = 0x6474e550,
+  PT_GNU_STACK = 0x6474e551,
+  PT_GNU_RELRO = 0x6474e552,
+  PT_GNU_PROPERTY = 0x6ffffef5,
   PT_HIOS = 0x6FFFFFFF,
   PT_LOPROC = 0x70000000,
   PT_HIPROC = 0x7FFFFFFF
@@ -384,6 +388,8 @@ class ELF {
   DynamicSymbol* getDynSymbolById( uint16_t id );
   DynamicSymbol* getDynSymbolByName( std::string dynamiSymbolName );
   int8_t* fetchRawSymbolByName( std::string symbolName);
+
+  bool isSectionExists( std::string );
 
   std::vector<Rel*> getRels();
   std::vector<Rela*> getRelas();

@@ -10,7 +10,7 @@ void MockProcess::createMainThread() {
 }
 
 void MockProcess::start() {
-    
+   for(;;); 
 }
 
 void MockProcess::stop() {
