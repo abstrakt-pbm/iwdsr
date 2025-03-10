@@ -5,10 +5,15 @@ MockProcess::MockProcess() {
     this->mem = new MockMemory();
 }
 
-void MockProcess::start() {
+void MockProcess::createMainThread() {
 
+}
+
+void MockProcess::start() {
+    
 }
 
 void MockProcess::stop() {
     
 }
+

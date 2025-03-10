@@ -15,8 +15,8 @@ set ( CORE_HEADERS
         "proc/procmem.hpp"
         "proc/mock/mockproc.hpp"
         "proc/mock/mockmem.hpp"
-        "proc/windows/winproc.hpp"
-        "proc/windows/winmem.hpp"
+        #"proc/windows/winproc.hpp"
+        #"proc/windows/winmem.hpp"
         #"proc/posix/posixproc.hpp"
         #"proc/posix/posixmem.hpp"
 )
@@ -30,8 +30,8 @@ set ( CORE_SRC
         "proc/procmem.cpp"
         "proc/mock/mockproc.cpp"
         "proc/mock/mockmem.cpp"
-        "proc/windows/winproc.cpp"
-        "proc/windows/winmem.cpp"
+        #"proc/windows/winproc.cpp"
+        #"proc/windows/winmem.cpp"
         #"proc/posix/posixproc.cpp"
         #"proc/posix/posixmem.cpp"
 )
