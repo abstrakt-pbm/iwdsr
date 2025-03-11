@@ -11,7 +11,7 @@ int main() {
     ld.loadElf(&elf);
     
     proc.createMainThread();
-    //proc.start();
+    proc.start();
 }
 
 // has big problem with separate askii symbols and making dynsymb tab with names

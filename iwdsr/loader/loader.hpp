@@ -19,6 +19,8 @@ class Loader {
     std::unordered_map<std::string, ELF_PARSER::ELF*> libPool;
 
     void loadElfInMemBlk(ELF_PARSER::ELF* elf, MemBlock* blk);
+    void initStack( uint64_t stackSize);
+    void initHeap();
 
     public:
     Loader(Process* proc);

@@ -13,6 +13,7 @@ Loader::Loader(Process* proc) {
 
 void Loader::loadElf(ELF_PARSER::ELF* elfFile) {
     MemBlock* elfMemBlk = memMap.reserve( 0x10000, elfFile->getMemImageSize(), MemBlkPageSize::KB4 );
+    initStack( MemBlkPageSize::MB2 * 4 );
 
     if ( elfMemBlk == nullptr) {
         std::cout << "Failed to reserve memory block for executable" << std::endl;
@@ -28,6 +29,7 @@ void Loader::loadElf(ELF_PARSER::ELF* elfFile) {
     }
 
     symbolResolver.resolveImage( BASE_ELF_MEMORY_IMAGE );
+    initHeap();
 }
 
 void Loader::loadDLL( std::string libName, ELF_PARSER::ELF* dynamicLib) {

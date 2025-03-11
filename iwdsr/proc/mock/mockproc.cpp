@@ -10,6 +10,7 @@ void MockProcess::createMainThread() {
 }
 
 void MockProcess::start() {
+    
    for(;;); 
 }
 
